@@ -25,7 +25,7 @@ class TaskController < ApplicationController
     end
     task.title = params[:title].to_s.strip
 
-    if params[:owner].present?
+    if params[:owner] != 'nobody'
       user = User.find_by_name(params[:owner])
       if !user
         render :json => {:success => false, :errors => ["Owner: not found"]}
@@ -78,7 +78,7 @@ class TaskController < ApplicationController
     task = Task.new
     task.creator = current_user
     task.title = params[:title].to_s.strip
-    if params[:owner].present?
+    if params[:owner] != 'nobody'
       user = User.find_by_name(params[:owner])
       if !user
         render :json => {:success => false, :errors => ["Owner: not found"]}

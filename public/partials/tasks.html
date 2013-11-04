@@ -11,10 +11,8 @@
     <option value="">all</option>
   <select>
   Owner:
-  <select ng-model="filterOwner">
+  <select ng-model="filterOwner" ng-options="x for x in choices.allUserNamesAndNobody">
     <option value="">all</option>
-    <option value="nobody">nobody</option>
-    <option ng-repeat="x in choices.allUserNames" value="{{x}}">{{x}}</option>
   <select>
   </p>
 

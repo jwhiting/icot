@@ -5,6 +5,7 @@ angular.module('myApp.services', []).
   service('$choices',[function(){
     var self = this;
     self.allUserNames = [];
+    self.allUserNamesAndNobody = [];
     self.allStatuses = [];
   }]).
 
@@ -28,6 +29,7 @@ angular.module('myApp.services', []).
             self.loggedIn = false;
           }
           $choices.allUserNames = result.all_user_names;
+          $choices.allUserNamesAndNobody = ['nobody'].concat(result.all_user_names);
           $choices.allStatuses = result.all_statuses;
         } else {
           self.userName = '';

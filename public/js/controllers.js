@@ -4,7 +4,6 @@ angular.module('myApp.controllers', []);
 
 angular.module('myApp').controller('RootCtrl',['$scope','$auth', '$choices', function($scope, $auth, $choices) {
   $scope.auth = $auth;
-  $scope.atLocation = '';
   $scope.choices = $choices;
 }]);
 
@@ -26,17 +25,14 @@ angular.module('myApp').controller('AuthCtrl',['$scope','$auth', function($scope
     });
   };
   $scope.logout = $auth.logout;
-
 }]);
 
 angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$location', '$timeout', '$rootScope', function($scope, $auth, $http, $location, $timeout, $rootScope) {
 
   var self = this;
 
+  // task data loading
   $scope.tasks = [];
-  $scope.hasFocusedTask = false;
-  $scope.focusedTaskId = null;
-  $scope.pendingFocusedTaskId = null;
 
   $scope.loadTasks = function() {
     $http.get('/tasks').then(function(result){
@@ -64,10 +60,13 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     $scope.doSort();
   });
 
-  $scope.sortOrder = -1;
-  $scope.sortBy = 'priority';
-  $scope.filterStatus = '';
-  $scope.filterOwner = '';
+  console.log("location.search:",$location.search());
+  $scope.filterStatus = $location.search()['status'];
+  $scope.filterOwner = $location.search()['owner'];
+  $scope.sortBy = $location.search()['sort'] || 'priority';
+  $scope.sortOrder = $location.search()['order'] || -1;
+  console.log("filterStatus:",$scope.filterStatus);
+  console.log("filterOwner:",$scope.filterOwner);
   $scope.filterFunc = function(task) {
     if ($scope.filterStatus && task.status != $scope.filterStatus) return false;
     if ($scope.filterOwner) {
@@ -76,31 +75,21 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     }
     return true;
   };
-  var loadListParamsFromHash = function() {
-    var params = ($location.hash()+'').split(":");
-    if (params[0]) $scope.sortBy = params[0];
-    if (params[1]) $scope.sortOrder = parseInt(params[1]);
-    $scope.filterStatus = '';
-    $scope.filterOwner = '';
-    if (params[2]) {
-      var pairs = params[2].split('&');
-      for (var i = 0; i < pairs.length; i++) {
-        var pair = pairs[i].split('=');
-        if (pair[0] == 'status') $scope.filterStatus = pair[1];
-        if (pair[0] == 'owner') $scope.filterOwner = pair[1];
-      }
+
+  // filtering
+
+  $scope.$watch('filterStatus',function(newValue,oldValue){
+    if (newValue != oldValue) {
+      console.log("filterStatus watch updating location", $scope.filterStatus);
+      $location.search('status',$scope.filterStatus);
     }
-  };
-  var setListParamsInHash = function() {
-    var pairs = [];
-    if ($scope.filterStatus) pairs.push('status='+$scope.filterStatus);
-    if ($scope.filterOwner) pairs.push('owner='+$scope.filterOwner);
-    $scope.atLocation = $scope.sortBy + ':' + $scope.sortOrder + ':' + pairs.join("&");
-    $location.hash($scope.atLocation);
-  }
-  $scope.$watch('filterStatus',function(){ setListParamsInHash(); });
-  $scope.$watch('filterOwner',function(){ setListParamsInHash(); });
-  loadListParamsFromHash();
+  });
+  $scope.$watch('filterOwner',function(newValue,oldValue){
+    if (newValue != oldValue) {
+      console.log("filterOwner watch updating location", $scope.filterOwner);
+      $location.search('owner',$scope.filterOwner);
+    }
+  });
 
   $scope.doSort = function() {
     var self = this;
@@ -127,10 +116,20 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       $scope.sortBy = prop;
     }
     $scope.doSort();
-    setListParamsInHash();
+    $location.search('sort',$scope.sortBy);
+    $location.search('order',$scope.sortOrder);
   }
 
   $scope.doSort();
+
+
+
+  // task focusing
+  $scope.hasFocusedTask = false;
+  $scope.pendingFocusedTaskId = null;
+  $scope.focusedTaskId = $location.search()['taskId'];
+  if ($scope.focusedTaskId) $scope.hasFocusedTask = true;
+  console.log("focusedTaskId=",$scope.focusedTaskId);
 
   $scope.focusTask = function(taskId) {
     console.log("focusTask:",taskId);
@@ -138,6 +137,8 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       $scope.focusedTaskId = taskId;
       $scope.pendingFocusedTaskId = null;
       $scope.hasFocusedTask = true;
+      console.log("setting location taskId",taskId);
+      $location.search('taskId',taskId);
     } else {
       $scope.pendingFocusedTaskId = taskId;
       if ($scope.modalCloseFunction) { $scope.modalCloseFunction(); }
@@ -149,6 +150,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
   }
 
   $scope.closeTask = function() {
+    // this just triggers the modal close. the job gets finished on modalDidClose
     console.log("closeTask");
     if ($scope.hasFocusedTask) {
       console.log("closeTask hasFocusedTask");
@@ -160,6 +162,8 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     console.log("modalDidClose");
     $scope.focusedTaskId = null;
     $scope.hasFocusedTask = false;
+    console.log("setting location taskId to null");
+    $location.search('taskId',null);
     if ($scope.pendingFocusedTaskId) {
       $timeout(function(){
         console.log("modalDidClose opening pending task", $scope.pendingFocusedTaskId);
@@ -167,24 +171,6 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       });
     }
   };
-
-  $scope.$watch(function(){return $location.hash()},function(){
-    var matches = ('' + $location.hash()).match(/^task:(\d+)/);
-    if (matches) {
-      console.log("location watch match",matches);
-      var id = matches[1];
-      if (id != $scope.focusedTaskId) {
-        console.log("location watch sees new task id, opening",id);
-        $scope.focusTask(id);
-      }
-    } else {
-      console.log("location watch does not match");
-      if ($scope.hasFocusedTask) {
-        console.log("location watch closeTask");
-        $scope.closeTask();
-      }
-    }
-  });
 
 }]);
 
@@ -196,8 +182,6 @@ angular.module('myApp').controller('TaskDetailCtrl',['$scope','$auth', '$http','
   $scope.errors = null;
 
   if ($scope.focusedTaskId) {
-    $scope.atLocation = 'task:'+$scope.focusedTaskId;
-    $location.hash($scope.atLocation);
     $http.get('/task?id='+$scope.focusedTaskId).then(function(result){
       if (result && result.data) {
         console.log("got task",result.data);
@@ -226,8 +210,6 @@ angular.module('myApp').controller('TaskDetailCtrl',['$scope','$auth', '$http','
 
   $scope.$on('$destroy',function(){
     console.log("detail controller destroyed");
-    if ($scope.hasOwnProperty('atLocation')) { delete $scope.atLocation; }
-    $location.hash($scope.atLocation);
   });
 
   $scope.update = function() {
