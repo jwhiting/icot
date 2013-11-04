@@ -5,7 +5,7 @@
     </ul>
     <h3>{{newTask.title || 'New Task'}}</h3>
     <p>Title: <input type="text" autofocus ng-model="newTask.title"></p>
-    <p>Owner: <select ng-model="newTask.owner" ng-options="x for x in choices.allUserNames"><select></p>
+    <p>Owner: <select ng-model="newTask.owner" ng-options="x for x in choices.allUserNamesAndNobody"><select></p>
     <p>Status: <select ng-model="newTask.status" ng-options="x for x in choices.allStatuses"><select></p>
     <p>Priority: <input type="text" pattern="-?\d*" ng-model="newTask.priority"></p>
     <p>Tags: <input type="text" ng-model="newTask.raw_tags"></p>

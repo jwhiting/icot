@@ -255,6 +255,7 @@ angular.module('myApp').controller('NewTaskCtrl',['$scope','$auth', '$http', fun
 
   var defaults = {
     'status' : 'inbox',
+    'owner' : 'nobody',
   };
 
   $scope.newTask = $.extend({},defaults);
