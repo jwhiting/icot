@@ -10,9 +10,12 @@
   <h1>ICoT</h1>
 
   <div ng-include src="'partials/auth.html'"></div>
+  <hr>
 
   <div ng-switch="auth.loggedIn">
     <div ng-switch-when="true">
+      <a href="" xhr-modal="partials/newTask.html">create task</a>
+      <hr>
       <div ng-include src="'partials/tasks.html'"></div>
     </div>
   </div>

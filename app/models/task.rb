@@ -5,6 +5,13 @@ class Task < ActiveRecord::Base
   belongs_to :creator, :class_name => User, :foreign_key => :created_by_user_id
   belongs_to :owner, :class_name => User, :foreign_key => :owner_user_id
 
+  validates :title, :presence => true
+  validates :creator, :presence => true
+  validates :status, :presence => true
+
+  #before_validation :set_default_priority
+  before_validation :set_default_status
+
   STATUS_INBOX = 'inbox'
   STATUS_OPEN = 'open'
   STATUS_DEFERRED = 'deferred'
@@ -22,20 +29,28 @@ class Task < ActiveRecord::Base
     STATUS_INVALID,
   ].freeze
 
+  #def set_default_priority
+  #  self.priority ||= 0
+  #end
+
+  def set_default_status
+    self.status ||= STATUS_INBOX
+  end
+
   def vob_hash(reload = false)
     {
-      'id' => self.id,
-      'owner' => self.owner.name,
-      'title' => self.title,
+      'id' => self.id.to_i,
+      'owner' => self.owner.try(:name).to_s,
+      'title' => self.title.to_s,
       'priority' => self.priority,
-      'created' => self.created_at,
-      'status' => self.status,
+      'created' => self.created_at.to_s,
+      'status' => self.status.to_s,
       'tags' => self.tags(reload).map{|t| t.name},
       'notes' => self.notes(reload).map{|note|
-        { 'id' => note.id,
-          'description' => note.description,
-          'author' => note.user.name,
-          'created_at' => note.created_at
+        { 'id' => note.id.to_i,
+          'description' => note.description.to_s,
+          'author' => note.user.try(:name).to_s,
+          'created_at' => note.created_at.to_s
         }
       },
     }

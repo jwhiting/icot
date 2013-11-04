@@ -1,0 +1,15 @@
+<div ng-controller="NewTaskCtrl" task="task">
+  <form ng-submit="save()">
+    <ul ng-show="errors" style="color:red">
+      <li ng-repeat="error in errors">{{error}}</li>
+    </ul>
+    <h3>{{newTask.title || 'New Task'}}</h3>
+    <p>Title: <input type="text" autofocus ng-model="newTask.title"></p>
+    <p>Owner: <select ng-model="newTask.owner" ng-options="x for x in choices.allUserNames"><select></p>
+    <p>Status: <select ng-model="newTask.status" ng-options="x for x in choices.allStatuses"><select></p>
+    <p>Priority: <input type="text" pattern="-?\d*" ng-model="newTask.priority"></p>
+    <textarea style="width:400px;height:100px" ng-model="newTask.newNoteText" placeholder="Add a note"></textarea><br>
+    <input type="submit" value="save">
+  </form>
+</div>
+

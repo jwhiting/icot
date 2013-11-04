@@ -3,6 +3,7 @@
 angular.module('myApp.services', []).
 
   service('$choices',[function(){
+    var self = this;
     self.allUserNames = [];
     self.allStatuses = [];
   }]).
@@ -14,21 +15,24 @@ angular.module('myApp.services', []).
     self.bootstrapped = false;
     self.loggedIn = false;
 
-    console.log('whoami post');
-    var fetchPromise = $http.post('/whoami');
-    fetchPromise.success(function(result){
-      console.log('whoami result:',result);
-      if (result && result.success) {
-        self.userName = result.user_name;
-        self.loggedIn = true;
-        $choices.allUserNames = result.all_user_names;
-        $choices.allStatuses = result.all_statuses;
-      } else {
-        self.userName = '';
-        self.loggedIn = false;
-      }
-      self.bootstrapped = true;
-    });
+    self.loadWhoami = function() {
+      console.log('whoami post');
+      var fetchPromise = $http.post('/whoami');
+      fetchPromise.success(function(result){
+        console.log('whoami result:',result);
+        if (result && result.success) {
+          self.userName = result.user_name;
+          self.loggedIn = true;
+          $choices.allUserNames = result.all_user_names;
+          $choices.allStatuses = result.all_statuses;
+        } else {
+          self.userName = '';
+          self.loggedIn = false;
+        }
+        self.bootstrapped = true;
+      });
+    }
+    self.loadWhoami();
 
     self.login = function(aUserName,aPassword) {
       console.log('login post');
@@ -73,22 +77,5 @@ angular.module('myApp.services', []).
     };
 
   }])
-
-  //service('$crumbs',['$location',function($location){
-  //  var self = this;
-
-  //  self.crumbs = [];
-
-  //  self.hashForCrumbs = function(crumbs) {
-  //    crumbs.join("-");
-  //  };
-
-  //  self.setCrumbs = function(crumbs) {
-  //    self.crumbs = crumbs;
-
-  //  }
-
-  //}])
-
 
   ;

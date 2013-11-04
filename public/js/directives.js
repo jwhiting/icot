@@ -43,6 +43,7 @@ angular.module('myApp.directives', []).
             var modalScope = scope.$new(); // XXX do i need to create a new 'modalScope'? can i just use 'scope'?
             modalScope.currentModalScope = modalScope; // so nested scopes can get a handle on it
             modalScope.hideCloseButton = attrs.hideCloseButton;
+            modalScope.suppressBgClose = false; // nested scopes can access this and set true
             var modalDomEl = $compile(angular.element('<div modal-layout></div>').html(content))(modalScope);
             modalScope.inModal = false;
             modalScope.activeModal = false;
@@ -58,8 +59,8 @@ angular.module('myApp.directives', []).
                 });
               }
             };
-            modalScope.closeIt = function(via) {
-              if (via == 'bg-click' && attrs.noBgCloseWhen) {
+            modalScope.closeModal = function(via) {
+              if (via == 'bg-click') {
                 if (modalScope.suppressBgClose) {
                   console.log("modal not closing on bg-click");
                   return;
@@ -75,7 +76,9 @@ angular.module('myApp.directives', []).
                   modalDomEl.remove();
                   if (modalScope.modalDidClose) { modalScope.modalDidClose(); }
                 }, 200);
-                modalScope.setModalCloseFunction(null);
+                if (modalScope.setModalCloseFunction) {
+                  modalScope.setModalCloseFunction(null);
+                }
               }
             };
             if (modalScope.setModalCloseFunction) {
@@ -86,7 +89,7 @@ angular.module('myApp.directives', []).
               // scope's modalDidClose function will be called.
               // todo: perhaps move this to an attribute that watches a boolean
               // to determine when to close, like close-on="foo"?
-              modalScope.setModalCloseFunction(modalScope.closeIt);
+              modalScope.setModalCloseFunction(modalScope.closeModal);
             }
             var body = $document.find('body').eq(0); // todo: use root app element instead?
             body.append(modalDomEl);

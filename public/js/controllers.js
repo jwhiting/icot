@@ -29,18 +29,36 @@ angular.module('myApp').controller('AuthCtrl',['$scope','$auth', function($scope
 
 }]);
 
-angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$location', '$timeout', function($scope, $auth, $http, $location, $timeout) {
+angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$location', '$timeout', '$rootScope', function($scope, $auth, $http, $location, $timeout, $rootScope) {
 
   $scope.tasks = [];
   $scope.hasFocusedTask = false;
   $scope.focusedTaskId = null;
   $scope.pendingFocusedTaskId = null;
 
-  $http.get('/tasks').then(function(result){
-    if (result && result.data) {
-      console.log("got tasks",result.data);
-      $scope.tasks = result.data;
+  $scope.loadTasks = function() {
+    $http.get('/tasks').then(function(result){
+      if (result && result.data) {
+        console.log("got tasks",result.data);
+        $scope.tasks = result.data;
+      }
+    });
+  }
+  $scope.loadTasks();
+
+  $rootScope.$on('loadTasks',$scope.loadTasks);
+
+  $rootScope.$on('gotTask',function(e,task){
+    console.log('gotTask',task);
+    for (var i=0; i<$scope.tasks.length; i++) {
+      if ($scope.tasks[i].id == task.id) {
+        $scope.tasks[i] = task;
+        $scope.doSort();
+        return;
+      }
     }
+    $scope.tasks.push(task);
+    $scope.doSort();
   });
 
   $scope.sortOrder = 1;
@@ -53,7 +71,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       if (a[self.sortBy] < b[self.sortBy]) return (-1 * self.sortOrder);
       return 0;
     });
-    var props = ['status','priority','owner','name','title'];
+    var props = ['id','status','priority','owner','name','title'];
     self.sortButtonValue = {};
     for (var i = 0; i < props.length; i++) {
       var prop = props[i];
@@ -181,7 +199,62 @@ angular.module('myApp').controller('TaskDetailCtrl',['$scope','$auth', '$http', 
       if (result && result.data) {
         console.log("updated task",result.data);
         $scope.fullTask = result.data;
+        $scope.$emit('gotTask',result.data);
         $scope.loaded = true;
+        $scope.closeModal('complete');
+      }
+    });
+  };
+
+}]);
+
+angular.module('myApp').controller('NewTaskCtrl',['$scope','$auth', '$http', function($scope, $auth, $http) {
+
+  var defaults = {
+    'status' : 'inbox',
+  };
+
+  $scope.newTask = $.extend({},defaults);
+
+  var contentChanged = function() {
+    var checkProperties = ['title','owner','priority','status','newNoteText'];
+    for (var i=0; i < checkProperties.length; i++) {
+      var prop = checkProperties[i];
+      if ($scope.newTask[prop] != defaults[prop]) {
+        return true;
+      }
+    }
+    return false;
+  };
+  $scope.$watch(contentChanged,function(){
+    $scope.currentModalScope.suppressBgClose = contentChanged();
+  });
+
+  $scope.save = function() {
+    console.log("new task save",$scope.newTask);
+    var params = {
+      'title' : $scope.newTask.title,
+      'owner' : $scope.newTask.owner,
+      'status' : $scope.newTask.status,
+      'priority' : $scope.newTask.priority,
+      'note' : $scope.newTask.newNoteText,
+    };
+    $http.post('/new_task', params).then(function(result){
+      if (result && result.data) {
+        if (result.data.success) {
+          $scope.errors = null;
+          console.log("saved new task",result.data);
+          $scope.closeModal('complete');
+          $scope.$emit('gotTask',result.data.task);
+          //$scope.$emit('loadTasks');
+          return;
+        } else {
+          console.log("failed to save new task",result.data);
+          $scope.errors = result.data.errors;
+        }
+      } else {
+        console.log("failed to save new task - no result");
+        $scope.errors = ['there was a problem communicating with the server'];
       }
     });
   };

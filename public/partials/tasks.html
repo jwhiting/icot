@@ -6,6 +6,7 @@
 
   <table>
     <tr>
+      <th>id <button ng-click="sortByProp('id')" ng-bind-html-unsafe="sortButtonValue['id']"></button></th>
       <th>status <button ng-click="sortByProp('status')" ng-bind-html-unsafe="sortButtonValue['status']"></button></th>
       <th>priority <button ng-click="sortByProp('priority')" ng-bind-html-unsafe="sortButtonValue['priority']"></button></th>
       <th>owner <button ng-click="sortByProp('owner')" ng-bind-html-unsafe="sortButtonValue['owner']"></button></th>
@@ -13,6 +14,7 @@
       <th>name <button ng-click="sortByProp('title')" ng-bind-html-unsafe="sortButtonValue['title']"></button></th>
     </tr>
     <tr ng-repeat="task in tasks">
+      <td>{{task.id}}</td>
       <td>{{task.status}}</td>
       <td>{{task.priority}}</td>
       <td>{{task.owner}}</td>
@@ -29,7 +31,7 @@
 
   <div ng-switch="hasFocusedTask">
     <div ng-switch-when="true">
-      <div xhr-modal="partials/task.html" immediate="true" hide-close-button="false" no-bg-close-when="contentChanged()"></div>
+      <div xhr-modal="partials/task.html" immediate="true" hide-close-button="false"></div>
     </div>
   </div>
 
