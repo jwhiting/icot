@@ -3,7 +3,7 @@
 angular.module('myApp.controllers', []);
 
 angular.module('myApp').controller('RootCtrl',['$scope','$auth', function($scope, $auth) {
-
+  $scope.auth = $auth;
 }]);
 
 angular.module('myApp').controller('AuthCtrl',['$scope','$auth', function($scope, $auth) {

@@ -22,9 +22,15 @@
         </span>
       </td>
       <td>
-        <a href="#" xhr-modal="partials/task.html" >{{task.title}}</a>
+        <a href="#" xhr-modal="partials/task.html" location="task-{{task.id}}">{{task.title}}</a>
       </td>
     </tr>
   </table>
+
+  <!--<div ng-switch="haveFocusedTask">
+    <div ng-switch-when="true">
+      <div ng-include="partials/task.html"></div>
+    </div>
+  </div>-->
 
 </div>

@@ -7,6 +7,7 @@ angular.module('myApp.services', []).
 
     self.userName = '';
     self.bootstrapped = false;
+    self.loggedIn = false;
 
     console.log('whoami post');
     var fetchPromise = $http.post('/whoami');
@@ -14,8 +15,10 @@ angular.module('myApp.services', []).
       console.log('whoami result:',result);
       if (result && result.success) {
         self.userName = result.user_name;
+        self.loggedIn = true;
       } else {
         self.userName = '';
+        self.loggedIn = false;
       }
       self.bootstrapped = true;
     });
@@ -28,6 +31,7 @@ angular.module('myApp.services', []).
         console.log('login result:',result);
         if (result && result.success) {
           self.userName = result.user_name;
+          self.loggedIn = true;
           deferred.resolve(true);
         } else {
           deferred.resolve(false);
@@ -48,6 +52,7 @@ angular.module('myApp.services', []).
         console.log('logout result:',result);
         if (result && result.success) {
           self.userName = '';
+          self.loggedIn = false;
           deferred.resolve(true);
         } else {
           deferred.resolve(false);
@@ -61,5 +66,22 @@ angular.module('myApp.services', []).
     };
 
   }])
+
+  //service('$crumbs',['$location',function($location){
+  //  var self = this;
+
+  //  self.crumbs = [];
+
+  //  self.hashForCrumbs = function(crumbs) {
+  //    crumbs.join("-");
+  //  };
+
+  //  self.setCrumbs = function(crumbs) {
+  //    self.crumbs = crumbs;
+
+  //  }
+
+  //}])
+
 
   ;

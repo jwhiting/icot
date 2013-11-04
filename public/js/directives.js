@@ -9,7 +9,7 @@ angular.module('myApp.directives', []).
     }
   }).
 
-  directive('xhrModal', ['$compile','$timeout','$document','$http',function($compile,$timeout,$document,$http){
+  directive('xhrModal', ['$compile','$timeout','$document','$http','$location',function($compile,$timeout,$document,$http,$location){
     return {
       //scope: {
       //  context: "=", // provide an arbitrary object to the modal for context, such as the task for a task detail modal. 
@@ -45,30 +45,49 @@ angular.module('myApp.directives', []).
             modalScope.inModal = false;
             modalScope.activeModal = false;
             modalScope.openIt = function() {
-              console.log("better xhr open modal stage 1");
-              modalScope.activeModal = false;
-              modalScope.inModal = true;
-              //modalScope.$apply();
-              $timeout(function(){
-                console.log("better xhr open modal stage 2");
-                modalScope.activeModal = true;
-              });
+              if (!modalScope.inModal) {
+                console.log("better xhr open modal stage 1");
+                modalScope.activeModal = false;
+                modalScope.inModal = true;
+                //modalScope.$apply();
+                $timeout(function(){
+                  console.log("better xhr open modal stage 2");
+                  modalScope.activeModal = true;
+                });
+              }
             };
-            modalScope.closeIt = function() {
-              console.log("better xhr close modal stage 1");
-              modalScope.activeModal = false;
-              $timeout(function(){
-                console.log("better xhr close modal stage 2");
-                modalScope.inModal = false;
-                modalScope.$destroy();
-                modalDomEl.remove();
-              }, 200);
+            modalScope.closeIt = function(noRestoreLocation) {
+              if (modalScope.activeModal) {
+                console.log("better xhr close modal stage 1");
+                modalScope.activeModal = false;
+                $timeout(function(){
+                  console.log("better xhr close modal stage 2");
+                  modalScope.inModal = false;
+                  modalScope.$destroy();
+                  modalDomEl.remove();
+                }, 200);
+                if (!noRestoreLocation && attrs.location) {
+                  console.log("restoring location from",$location.hash(),"to",modalScope.oldLocation);
+                  $location.hash(modalScope.oldLocation);
+                }
+              }
             };
             var body = $document.find('body').eq(0); // todo: use root app element instead?
             body.append(modalDomEl);
             modalScope.openIt();
             spinner.stop();
             element.removeClass('cleartext');
+            if (attrs.location) {
+              modalScope.oldLocation = $location.hash();
+              console.log("location=",$location.hash());
+              console.log("modalScope.oldLocation=",modalScope.oldLocation);
+              $location.hash(attrs.location);
+              scope.$watch(function(){ return $location.hash(); },function(){
+                if ($location.hash() != attrs.location) {
+                  modalScope.closeIt(true);
+                }
+              });
+            }
           }, function(error){
             spinner.stop();
             element.removeClass('cleartext');
