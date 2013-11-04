@@ -1,0 +1,30 @@
+<div ng-controller="TaskListCtrl">
+
+  <style type="text/css">
+    table td { border: 1px solid #ccc; }
+  </style>
+
+  <table>
+    <tr>
+      <th>status <button ng-click="sortByProp('status')" ng-bind-html-unsafe="sortButtonValue['status']"></button></th>
+      <th>priority <button ng-click="sortByProp('priority')" ng-bind-html-unsafe="sortButtonValue['priority']"></button></th>
+      <th>owner <button ng-click="sortByProp('owner')" ng-bind-html-unsafe="sortButtonValue['owner']"></button></th>
+      <th>tags</th>
+      <th>name <button ng-click="sortByProp('title')" ng-bind-html-unsafe="sortButtonValue['title']"></button></th>
+    </tr>
+    <tr ng-repeat="task in tasks">
+      <td>{{task.status}}</td>
+      <td>{{task.priority}}</td>
+      <td>{{task.owner}}</td>
+      <td>
+        <span ng-repeat="tag in task.tags">
+          {{tag}}
+        </span>
+      </td>
+      <td>
+        <a href="#" xhr-modal="partials/task.html" >{{task.title}}</a>
+      </td>
+    </tr>
+  </table>
+
+</div>

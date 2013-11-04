@@ -1,0 +1,24 @@
+<div ng-controller="AuthCtrl" ng-cloak>
+  <div ng-hide="auth.bootstrapped">
+    <p>Fetching auth status...</p>
+  </div>
+  <div ng-show="auth.bootstrapped">
+    <div ng-show="auth.userName != ''">
+      <p>Logged in as: {{auth.userName}}</p>
+      <form ng-submit="logout()">
+        <input type="submit" value="Logout">
+      </form>
+    </div>
+    <div ng-show="auth.userName == ''">
+      <form ng-submit="login()">
+        <p ng-show="failed" style="color:red">Username or password incorrect</p>
+        Username:<br>
+        <input type="text" ng-model="userNameInput"><br>
+        Password:<br>
+        <input type="password" ng-model="passwordInput"><br>
+        <input type="submit" value="Login">
+      </form>
+    </div>
+  </div>
+</div>
+

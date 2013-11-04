@@ -60,4 +60,7 @@ Icot::Application.routes.draw do
   post '/login' => 'session#login', :as => :login
   post '/logout' => 'session#logout', :as => :logout
 
+  get '/tasks' => 'task#list', :as => :tasks
+  get '/task' => 'task#detail', :as => :task
+
 end

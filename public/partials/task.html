@@ -1,0 +1,12 @@
+<div ng-controller="TaskDetailCtrl" task="task">
+  <h3>{{task.title}}</h3>
+  <p>Owner: {{task.owner}}</p>
+  <p>Status: {{task.status}}</p>
+  <p>Priority: {{task.priority}}</p>
+  <p ng-hide="fullTask">
+    Loading details...
+  </p>
+  <div ng-show="fullTask">
+    <p ng-repeat="note in fullTask.notes"><b>{{note.author}}</b> ({{note.created_at}}): {{note.description}}</p>
+  </div>
+</div>
