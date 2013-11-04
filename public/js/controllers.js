@@ -4,7 +4,7 @@ angular.module('myApp.controllers', []);
 
 angular.module('myApp').controller('RootCtrl',['$scope','$auth', '$choices', function($scope, $auth, $choices) {
   $scope.auth = $auth;
-  $scope.atLocation = ''; // nested scopes set their own atLocation, this is how i preserve location "breadcrumbs"
+  $scope.atLocation = '';
   $scope.choices = $choices;
 }]);
 
@@ -30,6 +30,8 @@ angular.module('myApp').controller('AuthCtrl',['$scope','$auth', function($scope
 }]);
 
 angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$location', '$timeout', '$rootScope', function($scope, $auth, $http, $location, $timeout, $rootScope) {
+
+  var self = this;
 
   $scope.tasks = [];
   $scope.hasFocusedTask = false;
@@ -64,6 +66,19 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
 
   $scope.sortOrder = -1;
   $scope.sortBy = 'priority';
+  $scope.filter = '';
+
+  var loadListParamsFromHash = function() {
+    var params = ($location.hash()+'').split(":");
+    if (params[0]) $scope.sortBy = params[0];
+    if (params[1]) $scope.sortOrder = parseInt(params[1]);
+    if (params[2]) $scope.filter = params[2];
+  };
+  var setListParamsInHash = function() {
+    $scope.atLocation = $scope.sortBy + ':' + $scope.sortOrder + ':' + $scope.filter;
+    $location.hash($scope.atLocation);
+  }
+  loadListParamsFromHash();
 
   $scope.doSort = function() {
     var self = this;
@@ -90,6 +105,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       $scope.sortBy = prop;
     }
     $scope.doSort();
+    setListParamsInHash();
   }
 
   $scope.doSort();
@@ -100,8 +116,6 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       $scope.focusedTaskId = taskId;
       $scope.pendingFocusedTaskId = null;
       $scope.hasFocusedTask = true;
-      $scope.atLocation = 'task-'+taskId;
-      $location.hash($scope.atLocation);
     } else {
       $scope.pendingFocusedTaskId = taskId;
       if ($scope.modalCloseFunction) { $scope.modalCloseFunction(); }
@@ -124,8 +138,6 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     console.log("modalDidClose");
     $scope.focusedTaskId = null;
     $scope.hasFocusedTask = false;
-    delete $scope.atLocation; // restore atLocation to parent scope's value
-    $location.hash($scope.atLocation);
     if ($scope.pendingFocusedTaskId) {
       $timeout(function(){
         console.log("modalDidClose opening pending task", $scope.pendingFocusedTaskId);
@@ -135,7 +147,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
   };
 
   $scope.$watch(function(){return $location.hash()},function(){
-    var matches = ('' + $location.hash()).match(/^task-(\d+)/);
+    var matches = ('' + $location.hash()).match(/^task:(\d+)/);
     if (matches) {
       console.log("location watch match",matches);
       var id = matches[1];
@@ -154,13 +166,15 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
 
 }]);
 
-angular.module('myApp').controller('TaskDetailCtrl',['$scope','$auth', '$http', function($scope, $auth, $http) {
+angular.module('myApp').controller('TaskDetailCtrl',['$scope','$auth', '$http','$location', function($scope, $auth, $http, $location) {
 
   $scope.fullTask = null;
   $scope.originalTask = null;
   $scope.loaded = false;
 
   if ($scope.focusedTaskId) {
+    $scope.atLocation = 'task:'+$scope.focusedTaskId;
+    $location.hash($scope.atLocation);
     $http.get('/task?id='+$scope.focusedTaskId).then(function(result){
       if (result && result.data) {
         console.log("got task",result.data);
@@ -185,6 +199,12 @@ angular.module('myApp').controller('TaskDetailCtrl',['$scope','$auth', '$http', 
   };
   $scope.$watch(contentChanged,function(){
     $scope.currentModalScope.suppressBgClose = contentChanged();
+  });
+
+  $scope.$on('$destroy',function(){
+    console.log("detail controller destroyed");
+    if ($scope.hasOwnProperty('atLocation')) { delete $scope.atLocation; }
+    $location.hash($scope.atLocation);
   });
 
   $scope.update = function() {
