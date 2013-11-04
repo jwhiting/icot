@@ -66,18 +66,40 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
 
   $scope.sortOrder = -1;
   $scope.sortBy = 'priority';
-  $scope.filter = '';
-
+  $scope.filterStatus = '';
+  $scope.filterOwner = '';
+  $scope.filterFunc = function(task) {
+    if ($scope.filterStatus && task.status != $scope.filterStatus) return false;
+    if ($scope.filterOwner) {
+      if ($scope.filterOwner == 'nobody' && task.owner) return false;
+      if ($scope.filterOwner != 'nobody' && task.owner != $scope.filterOwner) return false;
+    }
+    return true;
+  };
   var loadListParamsFromHash = function() {
     var params = ($location.hash()+'').split(":");
     if (params[0]) $scope.sortBy = params[0];
     if (params[1]) $scope.sortOrder = parseInt(params[1]);
-    if (params[2]) $scope.filter = params[2];
+    $scope.filterStatus = '';
+    $scope.filterOwner = '';
+    if (params[2]) {
+      var pairs = params[2].split('&');
+      for (var i = 0; i < pairs.length; i++) {
+        var pair = pairs[i].split('=');
+        if (pair[0] == 'status') $scope.filterStatus = pair[1];
+        if (pair[0] == 'owner') $scope.filterOwner = pair[1];
+      }
+    }
   };
   var setListParamsInHash = function() {
-    $scope.atLocation = $scope.sortBy + ':' + $scope.sortOrder + ':' + $scope.filter;
+    var pairs = [];
+    if ($scope.filterStatus) pairs.push('status='+$scope.filterStatus);
+    if ($scope.filterOwner) pairs.push('owner='+$scope.filterOwner);
+    $scope.atLocation = $scope.sortBy + ':' + $scope.sortOrder + ':' + pairs.join("&");
     $location.hash($scope.atLocation);
   }
+  $scope.$watch('filterStatus',function(){ setListParamsInHash(); });
+  $scope.$watch('filterOwner',function(){ setListParamsInHash(); });
   loadListParamsFromHash();
 
   $scope.doSort = function() {

@@ -4,6 +4,19 @@
     table td { border: 1px solid #ccc; }
   </style>
 
+  <p>
+  Status:
+  <select ng-model="filterStatus" ng-options="x for x in choices.allStatuses">
+    <option value="">all</option>
+  <select>
+  Owner:
+  <select ng-model="filterOwner">
+    <option value="">all</option>
+    <option value="nobody">nobody</option>
+    <option ng-repeat="x in choices.allUserNames" value="{{x}}">{{x}}</option>
+  <select>
+  </p>
+
   <table>
     <tr>
       <th>id <button ng-click="sortByProp('id')" ng-bind-html-unsafe="sortButtonValue['id']"></button></th>
@@ -13,7 +26,7 @@
       <th>tags</th>
       <th>name <button ng-click="sortByProp('title')" ng-bind-html-unsafe="sortButtonValue['title']"></button></th>
     </tr>
-    <tr ng-repeat="task in tasks">
+    <tr ng-repeat="task in tasks | filter:filterFunc">
       <td>{{task.id}}</td>
       <td>{{task.status}}</td>
       <td>{{task.priority}}</td>
