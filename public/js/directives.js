@@ -41,6 +41,8 @@ angular.module('myApp.directives', []).
             console.log("better xhr modal got remote modal content",result);
             var content = result.data;
             var modalScope = scope.$new(); // XXX do i need to create a new 'modalScope'? can i just use 'scope'?
+            modalScope.currentModalScope = modalScope; // so nested scopes can get a handle on it
+            modalScope.hideCloseButton = attrs.hideCloseButton;
             var modalDomEl = $compile(angular.element('<div modal-layout></div>').html(content))(modalScope);
             modalScope.inModal = false;
             modalScope.activeModal = false;
@@ -56,7 +58,13 @@ angular.module('myApp.directives', []).
                 });
               }
             };
-            modalScope.closeIt = function() {
+            modalScope.closeIt = function(via) {
+              if (via == 'bg-click' && attrs.noBgCloseWhen) {
+                if (modalScope.suppressBgClose) {
+                  console.log("modal not closing on bg-click");
+                  return;
+                }
+              }
               if (modalScope.activeModal) {
                 console.log("better xhr close modal stage 1");
                 modalScope.activeModal = false;

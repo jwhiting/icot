@@ -41,7 +41,13 @@ class SessionController < ApplicationController
 
   def whoami
     logger.warn "whoami, current session: #{session.inspect}"
-    render :json => {:success => true, :user_name => session[:user_name].to_s}
+    all_user_names = User.find(:all).map{|u| u.name}
+    render :json => {
+      :success => true,
+      :user_name => session[:user_name].to_s,
+      :all_user_names => all_user_names,
+      :all_statuses => Task::STATUSES,
+    }
   end
 
 end

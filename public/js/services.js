@@ -2,7 +2,12 @@
 
 angular.module('myApp.services', []).
 
-  service('$auth',['$http','$q',function($http,$q){
+  service('$choices',[function(){
+    self.allUserNames = [];
+    self.allStatuses = [];
+  }]).
+
+  service('$auth',['$http','$q','$choices',function($http,$q,$choices){
     var self = this;
 
     self.userName = '';
@@ -16,6 +21,8 @@ angular.module('myApp.services', []).
       if (result && result.success) {
         self.userName = result.user_name;
         self.loggedIn = true;
+        $choices.allUserNames = result.all_user_names;
+        $choices.allStatuses = result.all_statuses;
       } else {
         self.userName = '';
         self.loggedIn = false;

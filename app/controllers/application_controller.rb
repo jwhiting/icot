@@ -13,6 +13,13 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  def current_user
+    return nil unless session[:user_name]
+    @_current_user ||= User.find_by_name(session[:user_name])
+    reset_session if !@_current_user
+    @_current_user
+  end
+
   protected
 
   def verified_request?

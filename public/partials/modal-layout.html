@@ -1,7 +1,8 @@
 <div ng-class="{showing: inModal, hidden: !inModal, on: activeModal, off: !activeModal}" class="fade off modal-outer">
   <div class="modal-inner-1"><div class="modal-inner-2"><div class="modal-inner-3">
-    <div class="modal-bg" ng-click="closeIt()"></div>
+    <div class="modal-bg" ng-click="closeIt('bg-click')"></div>
     <div ng-class="{showing: inModal, hidden: !inModal, on: activeModal, off: !activeModal}" class="modal-content zoom off">
+      <a ng-hide="hideCloseButton" href="" class="modal-close-btn" ng-click="closeIt('close-btn')">X</a>
       <div ng-transclude></div>
     </div>
   </div></div></div>

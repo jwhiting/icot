@@ -22,14 +22,14 @@
         </span>
       </td>
       <td>
-        <p ng-click="focusTask(task.id)">{{task.title}}</p>
+        <a href="" ng-click="focusTask(task.id)">{{task.title}}</a>
       </td>
     </tr>
   </table>
 
   <div ng-switch="hasFocusedTask">
     <div ng-switch-when="true">
-      <div xhr-modal="partials/task.html" immediate="true"></div>
+      <div xhr-modal="partials/task.html" immediate="true" hide-close-button="false" no-bg-close-when="contentChanged()"></div>
     </div>
   </div>
 
