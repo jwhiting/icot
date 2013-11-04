@@ -33,13 +33,20 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
 
   // task data loading
   $scope.tasks = [];
+  $scope.loading = false;
+  $scope.errors = [];
 
   $scope.loadTasks = function() {
+    $scope.loading = true;
     $http.get('/tasks').then(function(result){
       if (result && result.data) {
         console.log("got tasks",result.data);
         $scope.tasks = result.data;
         $scope.doSort();
+        $scope.loading = false;
+        $scope.errors = [];
+      } else {
+        $scope.errors = ['there was a problem loading the task list'];
       }
     });
   }
@@ -219,6 +226,7 @@ angular.module('myApp').controller('TaskDetailCtrl',['$scope','$auth', '$http','
       'owner' : $scope.fullTask.owner,
       'status' : $scope.fullTask.status,
       'priority' : $scope.fullTask.priority,
+      'raw_tags' : $scope.fullTask.raw_tags,
       'note' : $scope.fullTask.newNoteText,
     };
     $http.post('/task?id='+$scope.focusedTaskId, params).then(function(result){
@@ -252,7 +260,7 @@ angular.module('myApp').controller('NewTaskCtrl',['$scope','$auth', '$http', fun
   $scope.newTask = $.extend({},defaults);
 
   var contentChanged = function() {
-    var checkProperties = ['title','owner','priority','status','newNoteText'];
+    var checkProperties = ['title','owner','priority','status','newNoteText','raw_tags'];
     for (var i=0; i < checkProperties.length; i++) {
       var prop = checkProperties[i];
       if ($scope.newTask[prop] != defaults[prop]) {
@@ -273,6 +281,7 @@ angular.module('myApp').controller('NewTaskCtrl',['$scope','$auth', '$http', fun
       'status' : $scope.newTask.status,
       'priority' : $scope.newTask.priority,
       'note' : $scope.newTask.newNoteText,
+      'raw_tags' : $scope.newTask.raw_tags,
     };
     $http.post('/new_task', params).then(function(result){
       if (result && result.data) {
@@ -281,7 +290,6 @@ angular.module('myApp').controller('NewTaskCtrl',['$scope','$auth', '$http', fun
           console.log("saved new task",result.data);
           $scope.closeModal('complete');
           $scope.$emit('gotTask',result.data.task);
-          //$scope.$emit('loadTasks');
           return;
         } else {
           console.log("failed to save new task",result.data);

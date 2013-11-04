@@ -38,23 +38,29 @@ class Task < ActiveRecord::Base
     self.status ||= STATUS_INBOX
   end
 
-  def vob_hash(reload = false)
-    {
+  def vob_hash(opts = {})
+    reload = opts[:reload]
+    notes = opts[:notes]
+    h = {
       'id' => self.id.to_i,
       'owner' => self.owner.try(:name).to_s,
       'title' => self.title.to_s,
       'priority' => self.priority,
       'created' => self.created_at.to_s,
       'status' => self.status.to_s,
-      'tags' => self.tags(reload).map{|t| t.name},
-      'notes' => self.notes(reload).map{|note|
+      'raw_tags' => self.tags(reload).map{|t| t.name}.join(" "),
+      'tags' => self.tags(false).map{|t| t.name},
+    }
+    if notes
+      h['notes'] = self.notes(reload).map{|note|
         { 'id' => note.id.to_i,
           'description' => note.description.to_s,
           'author' => note.user.try(:name).to_s,
           'created_at' => note.created_at.to_s
         }
-      },
-    }
+      }
+    end
+    return h
   end
 
 end

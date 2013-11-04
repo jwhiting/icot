@@ -4,16 +4,22 @@
     table td { border: 1px solid #ccc; }
   </style>
 
+  <ul ng-show="errors" style="color:red">
+    <li ng-repeat="error in errors">{{error}}</li>
+  </ul>
+
   <p>
-  <a href="" ng-click="loadTasks()">Reload</a> | 
-  Status:
-  <select ng-model="filterStatus" ng-options="x for x in choices.allStatuses">
-    <option value="">all</option>
-  <select>
-  Owner:
-  <select ng-model="filterOwner" ng-options="x for x in choices.allUserNamesAndNobody">
-    <option value="">all</option>
-  <select>
+    Status:
+    <select ng-model="filterStatus" ng-options="x for x in choices.allStatuses">
+      <option value="">all</option>
+    <select>
+    Owner:
+    <select ng-model="filterOwner" ng-options="x for x in choices.allUserNamesAndNobody">
+      <option value="">all</option>
+    <select>
+    |
+    <span ng-show="loading">Loading tasks...</span>
+    <a ng-hide="loading" href="" ng-click="loadTasks()">Reload</a>
   </p>
 
   <table>
