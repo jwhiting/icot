@@ -193,6 +193,7 @@ angular.module('myApp').controller('TaskDetailCtrl',['$scope','$auth', '$http','
   $scope.fullTask = null;
   $scope.originalTask = null;
   $scope.loaded = false;
+  $scope.errors = null;
 
   if ($scope.focusedTaskId) {
     $scope.atLocation = 'task:'+$scope.focusedTaskId;
@@ -240,11 +241,20 @@ angular.module('myApp').controller('TaskDetailCtrl',['$scope','$auth', '$http','
     };
     $http.post('/task?id='+$scope.focusedTaskId, params).then(function(result){
       if (result && result.data) {
-        console.log("updated task",result.data);
-        $scope.fullTask = result.data;
-        $scope.$emit('gotTask',result.data);
-        $scope.loaded = true;
-        $scope.closeModal('complete');
+        if (result.data.success) {
+          console.log("updated task",result.data);
+          $scope.errors = null;
+          $scope.fullTask = result.data.task;
+          $scope.$emit('gotTask',result.data.task);
+          $scope.loaded = true;
+          $scope.closeModal('complete');
+        } else {
+          console.log("failed to update task",result.data);
+          $scope.errors = result.data.errors;
+        }
+      } else {
+        console.log("failed to update task - no result data");
+        $scope.errors = ['there was a problem communicating with the server'];
       }
     });
   };

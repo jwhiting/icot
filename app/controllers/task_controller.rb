@@ -19,68 +19,80 @@ class TaskController < ApplicationController
   def update
     task = Task.find(params[:id])
     changed = []
-    if params[:title].to_s.strip.present? && params[:title].strip != task.title
+
+    if params[:title].to_s.strip != task.title
       changed << "Title changed from '#{task.title}' to '#{params[:title]}'."
-      task.title = params[:title].strip
     end
-    if params[:owner].present? && task.owner.name != params[:owner]
+    task.title = params[:title].to_s.strip
+
+    if params[:owner].present?
       user = User.find_by_name(params[:owner])
-      raise ActiveRecord::RecordNotFound unless user
-      changed << "Owner changed from '#{task.owner.name}' to '#{params[:owner]}'."
-      task.owner = user
-    end
-    if params[:status].present? && task.status != params[:status]
-      if Task::STATUSES.include? params[:status]
-        changed << "Status changed from '#{task.status}' to '#{params[:status]}'."
-        task.status = params[:status]
+      if !user
+        render :json => {:success => false, :errors => ["Owner: not found"]}
+        return
       end
+      if task.owner != user
+        changed << "Owner changed from '#{task.owner.name}' to '#{params[:owner]}'."
+      end
+      task.owner = user
+    else
+      if task.owner
+        changed << "Owner changed from '#{task.owner.name}' to 'nobody'."
+      end
+      task.owner = nil
     end
-    if (params[:priority] =~ /-?\d+/) && task.priority != params[:priority].to_i
+
+    if task.status != params[:status]
+      changed << "Status changed from '#{task.status}' to '#{params[:status]}'."
+    end
+    task.status = params[:status]
+
+    if task.priority != params[:priority].to_i
       changed << "Priority changed from '#{task.priority}' to '#{params[:priority]}'."
-      task.priority = params[:priority]
     end
-    if params[:note].present?
-      note = Note.new
-      note.task = task
-      note.user = current_user
-      note.description = params[:note]
-      note.save
+    task.priority = params[:priority]
+
+    if task.valid?
+      if params[:note].present?
+        note = Note.new
+        note.task = task
+        note.user = current_user
+        note.description = params[:note]
+        note.save
+      end
+      if changed.present?
+        task.save
+        note = Note.new
+        note.task = task
+        note.user = current_user
+        note.description = changed.join("\n")
+        note.save
+      end
+      render :json => {:success => true, :task => task.vob_hash(true)}
+    else
+      render :json => {:success => false, :errors => task.errors.map{|prop,msg| "#{prop}: #{msg}"}}
     end
-    if changed.present?
-      task.save
-      note = Note.new
-      note.task = task
-      note.user = current_user
-      note.description = changed.join("\n")
-      note.save
-    end
-    render :json => task.vob_hash(true).to_json
   end
 
   def create
     task = Task.new
     task.creator = current_user
-    if params[:title].to_s.strip.present? && params[:title].strip != task.title
-      task.title = params[:title].strip
-    end
+    task.title = params[:title].to_s.strip
     if params[:owner].present?
       user = User.find_by_name(params[:owner])
-      raise ActiveRecord::RecordNotFound unless user
+      if !user
+        render :json => {:success => false, :errors => ["Owner: not found"]}
+        return
+      end
       task.owner = user
     end
-    if params[:status].present?
-      if Task::STATUSES.include? params[:status]
-        task.status = params[:status]
-      end
-    end
-    if (params[:priority] =~ /-?\d+/)
-      task.priority = params[:priority]
-    end
+    task.status = params[:status]
+    task.priority = params[:priority]
     if params[:note].present?
       note = Note.new
       note.task = task
       note.user = current_user
-      note.description = params[:note]
+      note.description = params[:note].to_s.strip
       note.save
     end
     if task.valid?

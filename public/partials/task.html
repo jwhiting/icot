@@ -5,11 +5,14 @@
     </div>
     <div ng-switch-when="true">
       <form ng-submit="update()">
-      <h3>{{fullTask.title}}</h3>
+        <ul ng-show="errors" style="color:red">
+          <li ng-repeat="error in errors">{{error}}</li>
+        </ul>
+        <h3>{{fullTask.title}}</h3>
         <p>Title: <input type="text" ng-model="fullTask.title"></p>
-        <p>Owner: <select ng-model="fullTask.owner" ng-options="x for x in choices.allUserNames"><select></p>
+        <p>Owner: <select ng-model="fullTask.owner" ng-options="x for x in choices.allUserNames"><option value="">nobody</option><select></p>
         <p>Status: <select ng-model="fullTask.status" ng-options="x for x in choices.allStatuses"><select></p>
-        <p>Priority: <input type="text" autofocus onFocus="this.select()" pattern="-?\d*" ng-model="fullTask.priority"></p>
+        <p>Priority: <input type="text" autofocus onFocus="this.select()" ng-model="fullTask.priority"></p>
         <p ng-repeat="note in fullTask.notes"><b>{{note.author}}</b> ({{note.created_at}}): {{note.description}}</p>
         <textarea style="width:400px;height:100px" ng-model="fullTask.newNoteText" placeholder="Add a note"></textarea><br>
         <input type="submit" value="save">

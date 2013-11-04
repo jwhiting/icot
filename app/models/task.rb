@@ -5,13 +5,6 @@ class Task < ActiveRecord::Base
   belongs_to :creator, :class_name => User, :foreign_key => :created_by_user_id
   belongs_to :owner, :class_name => User, :foreign_key => :owner_user_id
 
-  validates :title, :presence => true
-  validates :creator, :presence => true
-  validates :status, :presence => true
-
-  #before_validation :set_default_priority
-  before_validation :set_default_status
-
   STATUS_INBOX = 'inbox'
   STATUS_OPEN = 'open'
   STATUS_DEFERRED = 'deferred'
@@ -28,6 +21,14 @@ class Task < ActiveRecord::Base
     STATUS_WONTFIX,
     STATUS_INVALID,
   ].freeze
+
+  validates :title, :presence => true
+  validates :creator, :presence => true
+  validates_inclusion_of :status, :in => STATUSES
+  validates :priority, :numericality => true, :allow_nil => true
+
+  #before_validation :set_default_priority
+  before_validation :set_default_status
 
   #def set_default_priority
   #  self.priority ||= 0
