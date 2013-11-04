@@ -22,15 +22,15 @@
         </span>
       </td>
       <td>
-        <a href="#" xhr-modal="partials/task.html" location="task-{{task.id}}">{{task.title}}</a>
+        <p ng-click="focusTask(task.id)">{{task.title}}</p>
       </td>
     </tr>
   </table>
 
-  <!--<div ng-switch="haveFocusedTask">
+  <div ng-switch="hasFocusedTask">
     <div ng-switch-when="true">
-      <div ng-include="partials/task.html"></div>
+      <div xhr-modal="partials/task.html" immediate="true"></div>
     </div>
-  </div>-->
+  </div>
 
 </div>

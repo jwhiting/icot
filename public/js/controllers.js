@@ -27,9 +27,12 @@ angular.module('myApp').controller('AuthCtrl',['$scope','$auth', function($scope
 
 }]);
 
-angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', function($scope, $auth, $http) {
+angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$location', '$timeout', function($scope, $auth, $http, $location, $timeout) {
 
   $scope.tasks = [];
+  $scope.hasFocusedTask = false;
+  $scope.focusedTaskId = null;
+  $scope.pendingFocusedTaskId = null;
 
   $http.get('/tasks').then(function(result){
     if (result && result.data) {
@@ -70,18 +73,78 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', fu
 
   $scope.doSort();
 
+  $scope.focusTask = function(taskId) {
+    console.log("focusTask:",taskId);
+    if (!$scope.hasFocusedTask) {
+      $scope.focusedTaskId = taskId;
+      $scope.pendingFocusedTaskId = null;
+      $scope.hasFocusedTask = true;
+      $location.hash('task-'+taskId);
+    } else {
+      $scope.pendingFocusedTaskId = taskId;
+      if ($scope.modalCloseFunction) { $scope.modalCloseFunction(); }
+    }
+  };
+
+  $scope.setModalCloseFunction = function(closeFunction) {
+    $scope.modalCloseFunction = closeFunction;
+  }
+
+  $scope.closeTask = function() {
+    console.log("closeTask");
+    if ($scope.hasFocusedTask) {
+      console.log("closeTask hasFocusedTask");
+      if ($scope.modalCloseFunction) { $scope.modalCloseFunction(); }
+    }
+  }
+
+  $scope.modalDidClose = function() {
+    console.log("modalDidClose");
+    $scope.focusedTaskId = null;
+    $scope.hasFocusedTask = false;
+    $location.hash('');
+    if ($scope.pendingFocusedTaskId) {
+      $timeout(function(){
+        console.log("modalDidClose opening pending task", $scope.pendingFocusedTaskId);
+        $scope.focusTask($scope.pendingFocusedTaskId);
+      });
+    }
+  };
+
+  $scope.$watch(function(){return $location.hash()},function(){
+    var matches = ('' + $location.hash()).match(/^task-(\d+)/);
+    if (matches) {
+      console.log("location watch match",matches);
+      var id = matches[1];
+      if (id != $scope.focusedTaskId) {
+        console.log("location watch sees new task id, opening",id);
+        $scope.focusTask(id);
+      }
+    } else {
+      console.log("location watch does not match");
+      if ($scope.hasFocusedTask) {
+        console.log("location watch closeTask");
+        $scope.closeTask();
+      }
+    }
+  });
+
 }]);
 
 angular.module('myApp').controller('TaskDetailCtrl',['$scope','$auth', '$http', function($scope, $auth, $http) {
 
   $scope.fullTask = null;
+  $scope.loaded = false;
 
-  $http.get('/task?id='+$scope.task.id).then(function(result){
-    if (result && result.data) {
-      console.log("got task",result.data);
-      $scope.fullTask = result.data;
-    }
-  });
+  if ($scope.focusedTaskId) {
+    $http.get('/task?id='+$scope.focusedTaskId).then(function(result){
+      if (result && result.data) {
+        console.log("got task",result.data);
+        $scope.fullTask = result.data;
+        $scope.loaded = true;
+      }
+    });
+  }
 
 }]);
 

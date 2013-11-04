@@ -9,7 +9,7 @@ angular.module('myApp.directives', []).
     }
   }).
 
-  directive('xhrModal', ['$compile','$timeout','$document','$http','$location',function($compile,$timeout,$document,$http,$location){
+  directive('xhrModal', ['$compile','$timeout','$document','$http',function($compile,$timeout,$document,$http){
     return {
       //scope: {
       //  context: "=", // provide an arbitrary object to the modal for context, such as the task for a task detail modal. 
@@ -56,7 +56,7 @@ angular.module('myApp.directives', []).
                 });
               }
             };
-            modalScope.closeIt = function(noRestoreLocation) {
+            modalScope.closeIt = function() {
               if (modalScope.activeModal) {
                 console.log("better xhr close modal stage 1");
                 modalScope.activeModal = false;
@@ -65,29 +65,26 @@ angular.module('myApp.directives', []).
                   modalScope.inModal = false;
                   modalScope.$destroy();
                   modalDomEl.remove();
+                  if (modalScope.modalDidClose) { modalScope.modalDidClose(); }
                 }, 200);
-                if (!noRestoreLocation && attrs.location) {
-                  console.log("restoring location from",$location.hash(),"to",modalScope.oldLocation);
-                  $location.hash(modalScope.oldLocation);
-                }
+                modalScope.setModalCloseFunction(null);
               }
             };
+            if (modalScope.setModalCloseFunction) {
+              // wacky, but this is how the parent scope closes the modal. they
+              // cant just delete the node because of the css transition. they
+              // need an actual handle to the functionality to trigger the
+              // animation. once the modal is finally closed, then the parent
+              // scope's modalDidClose function will be called.
+              // todo: perhaps move this to an attribute that watches a boolean
+              // to determine when to close, like close-on="foo"?
+              modalScope.setModalCloseFunction(modalScope.closeIt);
+            }
             var body = $document.find('body').eq(0); // todo: use root app element instead?
             body.append(modalDomEl);
             modalScope.openIt();
             spinner.stop();
             element.removeClass('cleartext');
-            if (attrs.location) {
-              modalScope.oldLocation = $location.hash();
-              console.log("location=",$location.hash());
-              console.log("modalScope.oldLocation=",modalScope.oldLocation);
-              $location.hash(attrs.location);
-              scope.$watch(function(){ return $location.hash(); },function(){
-                if ($location.hash() != attrs.location) {
-                  modalScope.closeIt(true);
-                }
-              });
-            }
           }, function(error){
             spinner.stop();
             element.removeClass('cleartext');
@@ -95,11 +92,15 @@ angular.module('myApp.directives', []).
             //... eventually i want the modal directive to implement error handling with a specific error modal
           })
         }
-        element.bind('click',function(e) {
-          e.preventDefault();
-          e.stopPropagation();
-          loadModal()
-        });
+        if (attrs.immediate) {
+          loadModal();
+        } else {
+          element.bind('click',function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            loadModal();
+          });
+        }
       }
     }
   }])
