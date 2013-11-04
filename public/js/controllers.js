@@ -41,6 +41,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       if (result && result.data) {
         console.log("got tasks",result.data);
         $scope.tasks = result.data;
+        $scope.doSort();
       }
     });
   }
@@ -61,7 +62,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     $scope.doSort();
   });
 
-  $scope.sortOrder = 1;
+  $scope.sortOrder = -1;
   $scope.sortBy = 'priority';
 
   $scope.doSort = function() {

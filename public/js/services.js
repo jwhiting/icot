@@ -22,7 +22,11 @@ angular.module('myApp.services', []).
         console.log('whoami result:',result);
         if (result && result.success) {
           self.userName = result.user_name;
-          self.loggedIn = true;
+          if (self.userName) {
+            self.loggedIn = true;
+          } else {
+            self.loggedIn = false;
+          }
           $choices.allUserNames = result.all_user_names;
           $choices.allStatuses = result.all_statuses;
         } else {
