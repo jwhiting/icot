@@ -17,7 +17,7 @@
           <tr><td>Priority</td><td> <input autofocus type="text" size="3" pattern="-?\d*" ng-model="fullTask.priority"></td></tr>
           <tr><td>Tags</td><td> <input type="text" style="box-sizing:border-box;width:400px" ng-model="fullTask.raw_tags"></td></tr>
           <tr><td>Notes</td><td>
-            <p ng-repeat="note in fullTask.notes"><b>{{note.author}}</b>: {{note.description}}<br>
+            <p ng-repeat="note in fullTask.notes" ng-class="{'note-automated':note.automated}"><span class="note-author">{{note.author}}</span>: {{note.description}}<br>
             <span class="note-date">{{format_date(note.created_at)}}</span></p>
             <textarea style="width:400px;height:100px;box-sizing:border-box;padding:5px" ng-model="fullTask.newNoteText" placeholder="Add a note"></textarea>
           </td></tr>

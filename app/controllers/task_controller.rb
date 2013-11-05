@@ -32,12 +32,12 @@ class TaskController < ApplicationController
         return
       end
       if task.owner != user
-        changed << "Owner changed from '#{task.owner.name}' to '#{params[:owner]}'."
+        changed << "Owner changed from '#{task.owner.try(:name) || :nobody}' to '#{params[:owner]}'."
       end
       task.owner = user
     else
       if task.owner
-        changed << "Owner changed from '#{task.owner.name}' to 'nobody'."
+        changed << "Owner changed from '#{task.owner.try(:name)}' to 'nobody'."
       end
       task.owner = nil
     end
@@ -47,7 +47,7 @@ class TaskController < ApplicationController
     end
     task.status = params[:status]
 
-    if task.priority != params[:priority].to_i
+    if task.priority.to_i != params[:priority].to_i
       changed << "Priority changed from '#{task.priority}' to '#{params[:priority]}'."
     end
     task.priority = params[:priority]
@@ -86,21 +86,23 @@ class TaskController < ApplicationController
       task.raw_tags = new_names.join(" ")
 
       if task.valid?
-        task.save
         if params[:note].present?
           note = Note.new
           note.task = task
           note.user = current_user
           note.description = params[:note]
-          note.save
+          note.automated = 0
+          task.notes << note
         end
         if changed.present?
           note = Note.new
           note.task = task
           note.user = current_user
           note.description = changed.join("\n")
-          note.save
+          note.automated = 1
+          task.notes << note
         end
+        task.save
         render :json => {:success => true, :task => task.vob_hash(:reload => true, :notes => true)}
         return
       else
@@ -138,6 +140,7 @@ class TaskController < ApplicationController
         note = Note.new
         note.user = current_user
         note.description = params[:note].to_s.strip
+        note.automated = 0
         task.notes << note
       end
       if params[:rank_relative_to_id].present?

@@ -41,6 +41,7 @@
             <span ng-show="sortBy==prop && sortOrder==-1">&uarr;</span>
           </span>
         </th>
+        <th>notes</th>
       </tr>
       <tr ng-repeat="task in tasks | filter:filterFunc" ng-class="{'strike':(['done','wontfix','dupe','invalid'].indexOf(task.status) >= 0)}">
         <td style="padding:0;white-space: nowrap">
@@ -60,6 +61,9 @@
         </td>
         <td>
           <a href="" class="task-title-link" ng-click="focusTask(task.id)">{{task.title}}</a>
+        </td>
+        <td>
+          <span ng-show="task.num_notes">{{task.num_notes}}</span>
         </td>
       </tr>
     </table>

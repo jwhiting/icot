@@ -30,12 +30,18 @@ class Task < ActiveRecord::Base
   #before_validation :set_default_priority
   before_validation :set_default_status
 
+  before_save :set_note_count
+
   #def set_default_priority
   #  self.priority ||= 0
   #end
 
   def set_default_status
     self.status ||= STATUS_INBOX
+  end
+
+  def set_note_count
+    self.note_count = self.notes.select{|n| n.automated.to_i == 0}.length
   end
 
   def vob_hash(opts = {})
@@ -51,13 +57,15 @@ class Task < ActiveRecord::Base
       'status' => self.status.to_s,
       'raw_tags' => self.raw_tags.to_s,
       'tags' => self.raw_tags.to_s.split(/\s+/),
+      'num_notes' => self.note_count.to_i,
     }
     if notes
       h['notes'] = self.notes(reload).map{|note|
         { 'id' => note.id.to_i,
           'description' => note.description.to_s,
           'author' => note.user.try(:name).to_s,
-          'created_at' => note.created_at.to_i
+          'created_at' => note.created_at.to_i,
+          'automated' => (note.automated.to_i == 1),
         }
       }
     end

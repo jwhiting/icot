@@ -113,7 +113,15 @@ tr.strike {
 tr.strike a {
   color: #999;
 }
-
+.note-author {
+  font-weight: bold;
+}
+.note-automated {
+  color: #555;
+}
+.note-automated .note-author {
+  font-weight: normal;
+}
 
 /****** modals */
 
