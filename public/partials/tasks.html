@@ -41,7 +41,7 @@
       </tr>
       <tr ng-repeat="task in tasks | filter:filterFunc" ng-class="{'strike':(['done','wontfix','dupe','invalid'].indexOf(task.status) >= 0)}">
         <td style="padding:0">
-          <button ng-show="!moveRowId" class="move-btn" style="width:40px" ng-click="startMoveRow(task.id)">{{task.rank}}</button>
+          <button ng-show="!moveRowId" class="move-btn" style="width:40px" ng-click="startMoveRow(task.id)">&uarr;&darr;</button>
           <button ng-show="moveRowId && moveRowId==task.id" class="move-btn" ng-class="target" style="width:40px" ng-click="startMoveRow(task.id)">&uarr;&darr;</button>
           <button ng-show="moveRowId && moveRowId!=task.id" class="move-btn" style="width:20px" ng-click="endMoveRow(task.id,'above')">&uarr;</button><!--
        --><button ng-show="moveRowId && moveRowId!=task.id" class="move-btn" style="width:20px" ng-click="endMoveRow(task.id,'below')">&darr;</button>
@@ -50,13 +50,13 @@
         <td>{{task.status}}</td>
         <td>{{task.priority}}</td>
         <td>{{task.owner}}</td>
-        <td>
+        <td style="padding:2px 4px; font-size:80%">
           <span ng-repeat="tag in task.tags">
             {{tag}}
           </span>
         </td>
         <td>
-          <a href="" ng-click="focusTask(task.id)">{{task.title}}</a>
+          <a href="" class="task-title-link" ng-click="focusTask(task.id)">{{task.title}}</a>
         </td>
       </tr>
     </table>

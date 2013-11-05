@@ -49,8 +49,8 @@ class Task < ActiveRecord::Base
       'priority' => self.priority,
       'created_at' => self.created_at.to_i,
       'status' => self.status.to_s,
-      'raw_tags' => self.tags(reload).map{|t| t.name}.join(" "),
-      'tags' => self.tags(false).map{|t| t.name},
+      'raw_tags' => self.raw_tags.to_s,
+      'tags' => self.raw_tags.to_s.split(/\s+/),
     }
     if notes
       h['notes'] = self.notes(reload).map{|note|

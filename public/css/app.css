@@ -60,21 +60,13 @@ table.form-layout > tbody > tr {
   border: none;
   border-collapse: collapse;
   border-spacing: 0;
-  padding: 0 5px 5px 0;
+  padding: 0 5px 10px 0;
   vertical-align: top;
 }
 
 h1,h2,h3,h4,h5,h6,p { margin-top: 0 }
 
 .clickable { cursor: pointer; }
-
-tr.strike {
-  text-decoration: line-through;
-  color: #999;
-}
-tr.strike a {
-  color: #999;
-}
 
 .quote-text {
   font-style: italic;
@@ -105,6 +97,20 @@ tr.strike a {
   color: red;
   background: #fcc;
 }
+.task-title-link {
+  color: #444;
+  text-decoration: none;
+}
+.task-title-link:hover {
+  text-decoration: underline;
+}
+tr.strike {
+  color: #999;
+}
+tr.strike a {
+  color: #999;
+}
+
 
 /****** modals */
 
