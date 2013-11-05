@@ -7,6 +7,7 @@ class Task < ActiveRecord::Base
 
   STATUS_INBOX = 'inbox'
   STATUS_OPEN = 'open'
+  STATUS_IN_PROGRESS = 'in progress'
   STATUS_DEFERRED = 'deferred'
   STATUS_DONE = 'done'
   STATUS_DUPE = 'dupe'
@@ -15,6 +16,7 @@ class Task < ActiveRecord::Base
   STATUSES = [
     STATUS_INBOX,
     STATUS_OPEN,
+    STATUS_IN_PROGRESS,
     STATUS_DEFERRED,
     STATUS_DONE,
     STATUS_DUPE,

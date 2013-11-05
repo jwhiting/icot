@@ -51,7 +51,7 @@
        --><button ng-show="pickingPlacement && moveRowId!=task.id" class="move-btn" ng-class="{'picking':pickingPlacement}" style="width:20px" ng-click="finishPlacement(task.id,'below')" title="insert below">&darr;</button>
         </td>
         <td>{{task.id}}</td>
-        <td>{{task.status}}</td>
+        <td style="white-space: nowrap">{{task.status}}</td>
         <td>{{task.priority}}</td>
         <td>{{task.owner}}</td>
         <td style="padding:2px 4px; font-size:80%">
