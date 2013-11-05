@@ -9,13 +9,19 @@
           <li ng-repeat="error in errors">{{error}}</li>
         </ul>
         <h3>{{fullTask.title}}</h3>
-        <p>Title: <input type="text" ng-model="fullTask.title"></p>
-        <p>Owner: <select ng-model="fullTask.owner" ng-options="x for x in choices.allUserNamesAndNobody"><select></p>
-        <p>Status: <select ng-model="fullTask.status" ng-options="x for x in choices.allStatuses"><select></p>
-        <p>Priority: <input type="text" autofocus onFocus="this.select()" ng-model="fullTask.priority"></p>
-        <p>Tags: <input type="text" ng-model="fullTask.raw_tags"></p>
-        <p ng-repeat="note in fullTask.notes"><b>{{note.author}}</b> ({{note.created_at}}): {{note.description}}</p>
-        <textarea style="width:400px;height:100px" ng-model="fullTask.newNoteText" placeholder="Add a note"></textarea><br>
+        <table class="form-layout">
+          <tr><td>Created</td><td> {{format_date(fullTask.created_at)}}</td></tr>
+          <tr><td>Title</td><td> <input type="text" style="box-sizing:border-box;width:400px" ng-model="fullTask.title"></td></tr>
+          <tr><td>Owner</td><td> <select ng-model="fullTask.owner" ng-options="x for x in choices.allUserNamesAndNobody"><select></td></tr>
+          <tr><td>Status</td><td> <select ng-model="fullTask.status" ng-options="x for x in choices.allStatuses"><select></td></tr>
+          <tr><td>Priority</td><td> <input autofocus type="text" size="3" pattern="-?\d*" ng-model="fullTask.priority"></td></tr>
+          <tr><td>Tags</td><td> <input type="text" style="box-sizing:border-box;width:400px" ng-model="fullTask.raw_tags"></td></tr>
+          <tr><td>Notes</td><td>
+            <p ng-repeat="note in fullTask.notes"><b>{{note.author}}</b>: {{note.description}}<br>
+            <span class="note-date">{{format_date(note.created_at)}}</span></p>
+            <textarea style="width:400px;height:100px;box-sizing:border-box;padding:5px" ng-model="fullTask.newNoteText" placeholder="Add a note"></textarea>
+          </td></tr>
+        </table>
         <input type="submit" value="save">
       </form>
     </div>

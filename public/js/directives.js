@@ -9,6 +9,25 @@ angular.module('myApp.directives', []).
     }
   }).
 
+  directive('titleCaps', function(){
+    return {
+      link: function(scope, element, attrs){
+        var text = element.text();
+        var el = angular.element('<div></div>');
+        for (var i=0; i < text.length; i++) {
+          var ch = text.charAt(i);
+          if (ch.toUpperCase() == ch) {
+            el.append($('<span style="font-size: 130%"></span>').text(ch));
+          } else {
+            el.append($('<span></span>').text(ch.toUpperCase()));
+          }
+        }
+        element.empty();
+        element.append(el);
+      }
+    };
+  }).
+
   directive('xhrModal', ['$compile','$timeout','$document','$http',function($compile,$timeout,$document,$http){
     return {
       //scope: {

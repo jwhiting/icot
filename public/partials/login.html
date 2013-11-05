@@ -1,0 +1,19 @@
+<div ng-controller="LoginCtrl" ng-cloak>
+  <form ng-submit="login()">
+    <h3>Login</h3>
+    <table class="layout"><tr><td>
+      <p ng-show="failed" style="color:red">Username or password incorrect</p>
+      <p>Username:<br>
+      <input type="text" ng-model="userNameInput"></p>
+      <p>Password:<br>
+      <input type="password" ng-model="passwordInput"></p>
+      <input type="submit" value="Login">
+
+    </td><td style="padding-left: 20px; width: 400px;">
+
+    <p>{{quote.text}}<p>
+    <p><em>&mdash; {{quote.from}}</em></p>
+
+    </td></tr></table>
+  </form>
+</div>

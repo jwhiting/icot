@@ -3,21 +3,32 @@
 <head>
   <meta charset="utf-8">
   <title>ICoT</title>
+  <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/reset/reset-min.css">
+  <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/2.9.0/build/base/base-min.css">
   <link rel="stylesheet" href="css/app.css"/>
 </head>
 <body ng-controller="RootCtrl">
 
-  <h1>ICoT</h1>
+  <div ng-hide="true">LOADING</div>
 
-  <div ng-include src="'partials/auth.html'"></div>
-  <hr>
+  <div ng-cloak>
 
-  <div ng-switch="auth.loggedIn">
-    <div ng-switch-when="true">
-      <a href="" xhr-modal="partials/newTask.html">create task</a>
-      <hr>
-      <div ng-include src="'partials/tasks.html'"></div>
+    <h1 title-caps class="page-title">The Imperial Census Of Tasks Due Unto His Majesty The Padishah Emperor Shaddam Corrino IV</h1>
+
+    <div class="auth-info" ng-show="auth.loggedIn">
+      <p><b>{{auth.userName}}</b> &bull; <a href="" ng-click="auth.logout()">logout</a></p>
     </div>
+
+    <div ng-hide="auth.loggedIn">
+      <div ng-include src="'partials/login.html'"></div>
+    </div>
+
+    <div ng-switch="auth.loggedIn">
+      <div ng-switch-when="true">
+        <div ng-include src="'partials/tasks.html'"></div>
+      </div>
+    </div>
+
   </div>
 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
@@ -28,7 +39,9 @@
   <script src='js/controllers.js'></script>
   <script src='js/filters.js'></script>
   <script src='js/directives.js'></script>
+  <script src='js/quotes.js'></script>
   <script src='https://rawgithub.com/gsklee/ngStorage/master/ngStorage.js'></script>
+  <script src='js/moment.min.js'></script>
 
 </body>
 </html>

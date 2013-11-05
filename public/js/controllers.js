@@ -5,11 +5,18 @@ angular.module('myApp.controllers', []);
 angular.module('myApp').controller('RootCtrl',['$scope','$auth', '$choices', function($scope, $auth, $choices) {
   $scope.auth = $auth;
   $scope.choices = $choices;
+  $scope.quote = getDuneQuote(); // duneQuotes.js
+
+  $scope.format_date = function(unix_timestamp) {
+    return moment.unix(unix_timestamp).calendar();
+  };
+
 }]);
 
-angular.module('myApp').controller('AuthCtrl',['$scope','$auth', function($scope, $auth) {
+angular.module('myApp').controller('LoginCtrl',['$scope','$auth', function($scope, $auth) {
   $scope.auth = $auth;
   $scope.failed = false;
+  $scope.quote = getDuneQuote();
   $scope.login = function() {
     console.log("login() in controller.",$scope.userNameInput,$scope.passwordInput);
     var res = $auth.login($scope.userNameInput,$scope.passwordInput);
@@ -24,23 +31,23 @@ angular.module('myApp').controller('AuthCtrl',['$scope','$auth', function($scope
       }
     });
   };
-  $scope.logout = $auth.logout;
 }]);
 
 angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$location', '$timeout', '$rootScope', function($scope, $auth, $http, $location, $timeout, $rootScope) {
 
   var self = this;
+  $scope.quote = getDuneQuote();
 
   // task data loading
   $scope.tasks = [];
   $scope.loading = false;
   $scope.errors = [];
-
   $scope.loadTasks = function() {
     $scope.loading = true;
     $http.get('/tasks').then(function(result){
       if (result && result.data) {
         console.log("got tasks",result.data);
+        $scope.quote = getDuneQuote();
         $scope.tasks = result.data;
         $scope.doSort();
         $scope.loading = false;
@@ -51,9 +58,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     });
   }
   $scope.loadTasks();
-
   $rootScope.$on('loadTasks',$scope.loadTasks);
-
   $rootScope.$on('gotTask',function(e,task){
     console.log('gotTask',task);
     for (var i=0; i<$scope.tasks.length; i++) {
@@ -67,6 +72,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     $scope.doSort();
   });
 
+  // filtering and sorting
   console.log("location.search:",$location.search());
   $scope.filterStatus = $location.search()['status'];
   $scope.filterOwner = $location.search()['owner'];
@@ -80,11 +86,16 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       if ($scope.filterOwner == 'nobody' && task.owner) return false;
       if ($scope.filterOwner != 'nobody' && task.owner != $scope.filterOwner) return false;
     }
+    if ($scope.filterTags) {
+      var tags = $scope.filterTags.split(/\s+/);
+      var found = false;
+      for (var i=0; i<task.tags.length; i++) {
+        if (tags.indexOf(task.tags[i]) >= 0) found = true;
+      }
+      if (!found) return false;
+    }
     return true;
   };
-
-  // filtering
-
   $scope.$watch('filterStatus',function(newValue,oldValue){
     if (newValue != oldValue) {
       console.log("filterStatus watch updating location", $scope.filterStatus);
@@ -97,7 +108,12 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       $location.search('owner',$scope.filterOwner);
     }
   });
-
+  $scope.$watch('filterTags',function(newValue,oldValue){
+    if (newValue != oldValue) {
+      console.log("filterTags watch updating location", $scope.filterTags);
+      $location.search('tags',$scope.filterTags);
+    }
+  });
   $scope.doSort = function() {
     var self = this;
     self.tasks.sort(function(a,b){
@@ -105,16 +121,6 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       if (a[self.sortBy] < b[self.sortBy]) return (-1 * self.sortOrder);
       return 0;
     });
-    var props = ['id','status','priority','owner','name','title'];
-    self.sortButtonValue = {};
-    for (var i = 0; i < props.length; i++) {
-      var prop = props[i];
-      if (self.sortBy == prop) {
-        self.sortButtonValue[prop] = (self.sortOrder > 0 ? "&darr;&darr;" : "&uarr;&uarr;");
-      } else {
-        self.sortButtonValue[prop] = "&darr;";
-      }
-    }
   }
   $scope.sortByProp = function(prop) {
     if ($scope.sortBy == prop) {
@@ -126,18 +132,14 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     $location.search('sort',$scope.sortBy);
     $location.search('order',$scope.sortOrder);
   }
-
   $scope.doSort();
 
-
-
-  // task focusing
+  // task focusing (modal)
   $scope.hasFocusedTask = false;
   $scope.pendingFocusedTaskId = null;
   $scope.focusedTaskId = $location.search()['taskId'];
   if ($scope.focusedTaskId) $scope.hasFocusedTask = true;
   console.log("focusedTaskId=",$scope.focusedTaskId);
-
   $scope.focusTask = function(taskId) {
     console.log("focusTask:",taskId);
     if (!$scope.hasFocusedTask) {
@@ -151,11 +153,9 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       if ($scope.modalCloseFunction) { $scope.modalCloseFunction(); }
     }
   };
-
   $scope.setModalCloseFunction = function(closeFunction) {
     $scope.modalCloseFunction = closeFunction;
   }
-
   $scope.closeTask = function() {
     // this just triggers the modal close. the job gets finished on modalDidClose
     console.log("closeTask");
@@ -164,7 +164,6 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
       if ($scope.modalCloseFunction) { $scope.modalCloseFunction(); }
     }
   }
-
   $scope.modalDidClose = function() {
     console.log("modalDidClose");
     $scope.focusedTaskId = null;

@@ -4,12 +4,14 @@
       <li ng-repeat="error in errors">{{error}}</li>
     </ul>
     <h3>{{newTask.title || 'New Task'}}</h3>
-    <p>Title: <input type="text" autofocus ng-model="newTask.title"></p>
-    <p>Owner: <select ng-model="newTask.owner" ng-options="x for x in choices.allUserNamesAndNobody"><select></p>
-    <p>Status: <select ng-model="newTask.status" ng-options="x for x in choices.allStatuses"><select></p>
-    <p>Priority: <input type="text" pattern="-?\d*" ng-model="newTask.priority"></p>
-    <p>Tags: <input type="text" ng-model="newTask.raw_tags"></p>
-    <textarea style="width:400px;height:100px" ng-model="newTask.newNoteText" placeholder="Add a note"></textarea><br>
+    <table class="form-layout">
+      <tr><td>Title</td><td> <input type="text" style="box-sizing:border-box;width:400px" autofocus ng-model="newTask.title"></td></tr>
+      <tr><td>Owner</td><td> <select ng-model="newTask.owner" ng-options="x for x in choices.allUserNamesAndNobody"><select></td></tr>
+      <tr><td>Status</td><td> <select ng-model="newTask.status" ng-options="x for x in choices.allStatuses"><select></td></tr>
+      <tr><td>Priority</td><td> <input type="text" size="3" pattern="-?\d*" ng-model="newTask.priority"></td></tr>
+      <tr><td>Tags</td><td> <input type="text" style="box-sizing:border-box;width:400px" ng-model="newTask.raw_tags"></td></tr>
+      <tr><td>Notes</td><td> <textarea style="width:400px;height:100px;box-sizing:border-box;padding:5px" ng-model="newTask.newNoteText" placeholder="Add a note"></textarea></td></tr>
+    </table>
     <input type="submit" value="save">
   </form>
 </div>

@@ -46,7 +46,7 @@ class Task < ActiveRecord::Base
       'owner' => (self.owner.try(:name) || 'nobody'),
       'title' => self.title.to_s,
       'priority' => self.priority,
-      'created' => self.created_at.to_s,
+      'created_at' => self.created_at.to_i,
       'status' => self.status.to_s,
       'raw_tags' => self.tags(reload).map{|t| t.name}.join(" "),
       'tags' => self.tags(false).map{|t| t.name},
@@ -56,7 +56,7 @@ class Task < ActiveRecord::Base
         { 'id' => note.id.to_i,
           'description' => note.description.to_s,
           'author' => note.user.try(:name).to_s,
-          'created_at' => note.created_at.to_s
+          'created_at' => note.created_at.to_i
         }
       }
     end

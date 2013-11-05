@@ -9,43 +9,60 @@
   </ul>
 
   <p>
-    Status:
+    <b><a href="" xhr-modal="partials/newTask.html">New task</a></b>
+    &bull;
+    Filter by
+    status:
     <select ng-model="filterStatus" ng-options="x for x in choices.allStatuses">
       <option value="">all</option>
     <select>
-    Owner:
+    owner:
     <select ng-model="filterOwner" ng-options="x for x in choices.allUserNamesAndNobody">
       <option value="">all</option>
     <select>
-    |
+    tags:
+    <input type="text" size="15" ng-model="filterTags">
+    &bull;
     <span ng-show="loading">Loading tasks...</span>
     <a ng-hide="loading" href="" ng-click="loadTasks()">Reload</a>
   </p>
 
-  <table>
-    <tr>
-      <th>id <button ng-click="sortByProp('id')" ng-bind-html-unsafe="sortButtonValue['id']"></button></th>
-      <th>status <button ng-click="sortByProp('status')" ng-bind-html-unsafe="sortButtonValue['status']"></button></th>
-      <th>priority <button ng-click="sortByProp('priority')" ng-bind-html-unsafe="sortButtonValue['priority']"></button></th>
-      <th>owner <button ng-click="sortByProp('owner')" ng-bind-html-unsafe="sortButtonValue['owner']"></button></th>
-      <th>tags</th>
-      <th>name <button ng-click="sortByProp('title')" ng-bind-html-unsafe="sortButtonValue['title']"></button></th>
-    </tr>
-    <tr ng-repeat="task in tasks | filter:filterFunc">
-      <td>{{task.id}}</td>
-      <td>{{task.status}}</td>
-      <td>{{task.priority}}</td>
-      <td>{{task.owner}}</td>
-      <td>
-        <span ng-repeat="tag in task.tags">
-          {{tag}}
-        </span>
-      </td>
-      <td>
-        <a href="" ng-click="focusTask(task.id)">{{task.title}}</a>
-      </td>
-    </tr>
-  </table>
+  <table class="layout"><tr><td>
+
+    <table>
+      <tr>
+        <th ng-repeat="prop in ['id','status','priority','owner','tags','title']">
+          <span class="clickable" ng-click="sortByProp(prop)">
+            {{prop}}
+            <span ng-show="sortBy==prop && sortOrder==1">&darr;</span>
+            <span ng-show="sortBy==prop && sortOrder==-1">&uarr;</span>
+          </span>
+        </th>
+      </tr>
+      <tr ng-repeat="task in tasks | filter:filterFunc" ng-class="{'strike':(['done','wontfix','dupe','invalid'].indexOf(task.status) >= 0)}">
+        <td>{{task.id}}</td>
+        <td>{{task.status}}</td>
+        <td>{{task.priority}}</td>
+        <td>{{task.owner}}</td>
+        <td>
+          <span ng-repeat="tag in task.tags">
+            {{tag}}
+          </span>
+        </td>
+        <td>
+          <a href="" ng-click="focusTask(task.id)">{{task.title}}</a>
+        </td>
+      </tr>
+    </table>
+
+  </td><td>
+
+    <div style="margin-left: 20px; max-width: 400px">
+      <p class="quote-text">{{quote.text}}<p>
+      <p class="quote-from">&mdash; {{quote.from}}</p>
+    </div>
+
+  </td></tr></table>
 
   <div ng-switch="hasFocusedTask">
     <div ng-switch-when="true">
