@@ -1,0 +1,99 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides:          ICoT
+# Required-Start:    $all
+# Required-Stop:     $network $local_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start the ICoT unicorns at boot
+# Description:       Enable ICoT at boot time.
+### END INIT INFO
+
+# adapted from https://gist.github.com/IPrism/1010289
+ 
+set -u
+set -e
+ 
+USER=rails
+APP_NAME=icot
+RVM_STRING=ruby-1.9.3-p429
+APP_ROOT="/home/$USER/$APP_NAME"
+PID="$APP_ROOT/tmp/pids/unicorn.pid"
+ENV_VARS="/home/$USER/.app-env-vars"
+GEM_HOME="/home/$USER/.rvm/gems/$RVM_STRING"
+UNICORN_OPTS="-D -c $APP_ROOT/config/unicorn.rb"
+SET_PATH="cd $APP_ROOT; rvm use $RVM_STRING; source $ENV_VARS"
+CMD="$SET_PATH; $GEM_HOME/bin/unicorn_rails $UNICORN_OPTS"
+ 
+old_pid="$PID.oldbin"
+ 
+cd $APP_ROOT || exit 1
+ 
+sig () {
+	test -s "$PID" && kill -$1 `cat $PID`
+}
+ 
+oldsig () {
+	test -s $old_pid && kill -$1 `cat $old_pid`
+}
+ 
+case ${1-help} in
+start)
+	sig 0 && echo >&2 "Already running" && exit 0
+	su - $USER -c "$CMD"
+	;;
+stop)
+	sig QUIT && exit 0
+	echo >&2 "Not running"
+	;;
+force-stop)
+	sig TERM && exit 0
+	echo >&2 "Not running"
+	;;
+# restart|reload)
+# 	sig HUP && echo reloaded OK && exit 0
+# 	echo >&2 "Couldn't reload, starting '$CMD' instead"
+# 	su - $USER -c "$CMD"
+# 	;;
+# upgrade)
+# 	sig USR2 && exit 0
+# 	echo >&2 "Couldn't upgrade, starting '$CMD' instead"
+# 	su - $USER -c "$CMD"
+# 	;;
+cowboy-restart)
+	if sig USR2; then
+		echo >&2 "Launching new master, waiting 30 seconds."
+		sleep 30
+		if oldsig QUIT; then
+			echo >&2 "Stopping old master."
+			exit 0
+		else
+			echo >&2 "Couldn't send QUIT to old master"
+		fi
+	else
+		echo >&2 "Couldn't launch a new master. Starting new '$CMD' instead."
+		su - $USER -c "$CMD"
+	fi
+	;;
+graceful-1)
+	sig USR2 && echo >&2 "New master launched. Please Watch for spawned workers, then go to phase 2." && exit 0
+	echo >&2 "Couldn't send USR2, starting '$CMD' instead"
+	su - $USER -c "$CMD"
+	;;
+graceful-2)
+	oldsig WINCH && echo >&2 "Old master no longer serving request. Make sure site works, then go to phase 3." && exit 0
+	echo >&2 "Couldn't send WINCH to old master"
+	;;
+graceful-3)
+	oldsig QUIT && echo >&2 "Old master killed. All done." && exit 0
+	echo >&2 "Couldn't send QUIT to old master"
+	;;
+rotate)
+	sig USR1 && echo rotated logs OK && exit 0
+	echo >&2 "Couldn't rotate logs" && exit 1
+	;;
+*)
+ 	echo >&2 "Usage: $0 <start|stop|cowboy-restart|graceful-1,2,3|rotate|force-stop>"
+ 	exit 1
+ 	;;
+esac

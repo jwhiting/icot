@@ -23,7 +23,7 @@ if !gdocs
   gdocs.save
 end
 
-CSV.foreach('/home/josh/Downloads/icot2.csv', {:headers => true}) do |row|
+CSV.foreach('icot2.csv', {:headers => true}) do |row|
   next if row['task'].blank?
   next if row['status'].blank?
   next if row['task'] =~ /above this line/

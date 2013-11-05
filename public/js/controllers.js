@@ -76,8 +76,8 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
   console.log("location.search:",$location.search());
   $scope.filterStatus = $location.search()['status'];
   $scope.filterOwner = $location.search()['owner'];
-  $scope.sortBy = $location.search()['sort'] || 'priority';
-  $scope.sortOrder = $location.search()['order'] || -1;
+  $scope.sortBy = $location.search()['sort'] || 'rank';
+  $scope.sortOrder = $location.search()['order'] || 1;
   console.log("filterStatus:",$scope.filterStatus);
   console.log("filterOwner:",$scope.filterOwner);
   $scope.filterFunc = function(task) {
