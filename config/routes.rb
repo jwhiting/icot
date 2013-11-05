@@ -64,5 +64,6 @@ Icot::Application.routes.draw do
   get '/task' => 'task#detail', :as => :task
   post '/task' => 'task#update', :as => :task_update
   post '/new_task' => 'task#create', :as => :task_create
+  post '/rerank' => 'task#rerank', :as => :task_rerank
 
 end

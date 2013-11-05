@@ -30,8 +30,8 @@
   <table class="layout"><tr><td>
 
     <table>
-      <tr>
-        <th ng-repeat="prop in ['id','status','priority','owner','tags','title']">
+      <tr style="font-size:80%">
+        <th ng-repeat="prop in ['rank','id','status','priority','owner','tags','title']">
           <span class="clickable" ng-click="sortByProp(prop)">
             {{prop}}
             <span ng-show="sortBy==prop && sortOrder==1">&darr;</span>
@@ -40,6 +40,12 @@
         </th>
       </tr>
       <tr ng-repeat="task in tasks | filter:filterFunc" ng-class="{'strike':(['done','wontfix','dupe','invalid'].indexOf(task.status) >= 0)}">
+        <td style="padding:0">
+          <button ng-show="!moveRowId" class="move-btn" style="width:40px" ng-click="startMoveRow(task.id)">{{task.rank}}</button>
+          <button ng-show="moveRowId && moveRowId==task.id" class="move-btn" ng-class="target" style="width:40px" ng-click="startMoveRow(task.id)">&uarr;&darr;</button>
+          <button ng-show="moveRowId && moveRowId!=task.id" class="move-btn" style="width:20px" ng-click="endMoveRow(task.id,'above')">&uarr;</button><!--
+       --><button ng-show="moveRowId && moveRowId!=task.id" class="move-btn" style="width:20px" ng-click="endMoveRow(task.id,'below')">&darr;</button>
+        </td>
         <td>{{task.id}}</td>
         <td>{{task.status}}</td>
         <td>{{task.priority}}</td>

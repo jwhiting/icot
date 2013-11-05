@@ -90,6 +90,22 @@ tr.strike a {
   color: #999;
 }
 
+.move-btn {
+  padding: 4px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #999;
+  outline: none;
+}
+.move-btn.target {
+  background: #fcc;
+}
+.move-btn:hover {
+  color: red;
+  background: #fcc;
+}
+
 /****** modals */
 
 .zoom, .fade, .eased-transition {

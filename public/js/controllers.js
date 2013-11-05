@@ -134,6 +134,67 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
   }
   $scope.doSort();
 
+  // reranking
+  $scope.taskById = function(taskId) {
+    for (var i=0; i<$scope.tasks.length; i++) {
+      if ($scope.tasks[i].id == taskId) return $scope.tasks[i];
+    }
+    return null;
+  };
+  $scope.moveRowId = null;
+  $scope.startMoveRow = function(taskId) {
+    if (!$scope.moveRowId) {
+      $scope.moveRowId = taskId;
+    } else {
+      $scope.moveRowId = null;
+    }
+  };
+  $scope.endMoveRow = function(taskId,placement) {
+    var movingTaskId = $scope.moveRowId;
+    $scope.moveRowId = null;
+    var movingTask = $scope.taskById(movingTaskId);
+    var oldRank = movingTask.rank;
+    var newRank = $scope.taskById(taskId).rank;
+    if (oldRank < newRank) {
+      if (placement == 'above') newRank--;
+      for (var i=0; i<$scope.tasks.length; i++) {
+        if ($scope.tasks[i].rank >= oldRank && $scope.tasks[i].rank <= newRank) {
+          $scope.tasks[i].rank--;
+        }
+      }
+    } else {
+      if (placement == 'below') newRank++;
+      for (var i=0; i<$scope.tasks.length; i++) {
+        if ($scope.tasks[i].rank >= newRank && $scope.tasks[i].rank <= oldRank) {
+          $scope.tasks[i].rank++;
+        }
+      }
+    }
+    movingTask.rank = newRank;
+    $scope.doSort();
+    var params = {
+      'move_id' : movingTaskId,
+      'other_id' : taskId,
+      'placement' : placement,
+    };
+    $http.post('/rerank', params).then(function(result){
+      if (result && result.data) {
+        if (result.data.success) {
+          console.log("reranked task",result.data);
+          $scope.errors = null;
+          $scope.fullTask = result.data.task;
+          //$scope.$emit('loadTasks');
+        } else {
+          console.log("failed to rerank task",result.data);
+          $scope.errors = result.data.errors;
+        }
+      } else {
+        console.log("failed to rerank task - no result data");
+        $scope.errors = ['there was a problem communicating with the server'];
+      }
+    });
+  };
+
   // task focusing (modal)
   $scope.hasFocusedTask = false;
   $scope.pendingFocusedTaskId = null;

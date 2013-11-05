@@ -43,6 +43,7 @@ class Task < ActiveRecord::Base
     notes = opts[:notes]
     h = {
       'id' => self.id.to_i,
+      'rank' => self.rank.to_i,
       'owner' => (self.owner.try(:name) || 'nobody'),
       'title' => self.title.to_s,
       'priority' => self.priority,

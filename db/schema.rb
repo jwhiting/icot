@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 20131104115153) do
+ActiveRecord::Schema.define(:version => 20131105072700) do
 
   create_table "notes", :force => true do |t|
     t.integer  "task_id"
@@ -39,6 +39,7 @@ ActiveRecord::Schema.define(:version => 20131104115153) do
     t.datetime "created_at",         :null => false
     t.datetime "updated_at",         :null => false
     t.string   "raw_tags"
+    t.integer  "rank"
   end
 
   add_index "tasks", ["owner_user_id", "status", "created_at"], :name => "index_tasks_on_owner_user_id_and_status_and_created_at"

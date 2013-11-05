@@ -115,6 +115,7 @@ class TaskController < ApplicationController
       task = Task.new
       task.creator = current_user
       task.title = params[:title].to_s.strip
+      task.rank = 0;
       if params[:owner] != 'nobody'
         user = User.find_by_name(params[:owner])
         if !user
@@ -141,11 +142,35 @@ class TaskController < ApplicationController
       end
       if task.valid?
         task.save # also saves new notes and tags
+        task.rank = task.id
+        task.save
         render :json => {:success => true, :task => task.vob_hash(:reload => true, :notes => true)}
       else
         render :json => {:success => false, :errors => task.errors.map{|prop,msg| "#{prop}: #{msg}"}}
       end
     end
+  end
+
+  def rerank
+    move_task = Task.find(params[:move_id])
+    old_rank = move_task.rank
+    other_task = Task.find(params[:other_id])
+    new_rank = other_task.rank
+    placement = params[:placement]
+    Task.transaction do
+      if (old_rank < new_rank)
+        new_rank -= 1 if (placement == 'above')
+        ActiveRecord::Base.connection.execute("update tasks set rank=rank-1 where rank >= #{old_rank} and rank <= #{new_rank}")
+      else
+        new_rank += 1 if (placement == 'below')
+        ActiveRecord::Base.connection.execute("update tasks set rank=rank+1 where rank >= #{new_rank} and rank <= #{old_rank}")
+      end
+      move_task.rank = new_rank
+      move_task.save
+      render :json => {:success => true, :task => move_task.vob_hash}
+      return
+    end
+    render :json => {:success => false, :errors => ['server error during reranking']}
   end
 
 end
