@@ -139,6 +139,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     $scope.doSort();
     $location.search('sort',$scope.sortBy);
     $location.search('order',$scope.sortOrder);
+    $scope.rankingAvailable = ($scope.sortBy == 'rank');
   }
   $scope.doSort();
 
@@ -149,6 +150,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     }
     return null;
   };
+  $scope.rankingAvailable = ($scope.sortBy == 'rank');
   $scope.moveRowId = null;
   $scope.pickingPlacement = false;
   $scope.startMoveRow = function(taskId) {
@@ -161,15 +163,26 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     }
   };
   $scope.startNewTaskPlacement = function() {
-    console.log("pickNewTaskPlacement");
-    $scope.insertNewTaskAtId = null;
-    $scope.insertNewTaskPlacement = null;
-    $scope.moveRowId = null;
-    $scope.pickingPlacement = !$scope.pickingPlacement;
-    console.log("pickNewTaskPlacement pickingPlacement:",$scope.pickingPlacement);
+    if ($scope.rankingAvailable) {
+      console.log("pickNewTaskPlacement");
+      $scope.insertNewTaskAtId = null;
+      $scope.insertNewTaskPlacement = null;
+      $scope.moveRowId = null;
+      $scope.pickingPlacement = !$scope.pickingPlacement;
+      console.log("pickNewTaskPlacement pickingPlacement:",$scope.pickingPlacement);
+    } else {
+      $scope.finishPlacement(null, null);
+    }
   };
   $scope.finishPlacement = function(taskId, placement) {
     console.log("finishPlacement",taskId,placement);
+    if ($scope.sortBy == 'rank' && $scope.sortOrder == -1) {
+      if (placement == 'above') {
+        placement = 'below';
+      } else if (placement == 'below') {
+        placement = 'above';
+      }
+    }
     if ($scope.moveRowId) {
       // move task
       var movingTaskId = $scope.moveRowId;

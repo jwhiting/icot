@@ -117,7 +117,7 @@ class TaskController < ApplicationController
       task = Task.new
       task.creator = current_user
       task.title = params[:title].to_s.strip
-      task.rank = 0;
+      task.rank = Task.max_rank + 1
       if params[:owner] != 'nobody'
         user = User.find_by_name(params[:owner])
         if !user
@@ -130,6 +130,7 @@ class TaskController < ApplicationController
       task.priority = params[:priority]
       if params[:raw_tags].present?
         new_tags = params[:raw_tags].to_s.strip.split(/\s+/)
+        task.raw_tags = params[:raw_tags].to_s.strip
         new_tags.each do |new_tag|
           tag = Tag.new
           tag.name = new_tag
@@ -153,10 +154,6 @@ class TaskController < ApplicationController
       end
       if task.valid?
         task.save # also saves new notes and tags
-        if task.rank == 0
-          task.rank = task.id
-          task.save
-        end
         render :json => {:success => true, :task => task.vob_hash(:reload => true, :notes => true)}
       else
         render :json => {:success => false, :errors => task.errors.map{|prop,msg| "#{prop}: #{msg}"}}

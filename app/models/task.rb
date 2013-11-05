@@ -28,15 +28,15 @@ class Task < ActiveRecord::Base
   validates :creator, :presence => true
   validates_inclusion_of :status, :in => STATUSES
   validates :priority, :numericality => true, :allow_nil => true
+  validates :rank, :numericality => { :greater_than => 0 }, :allow_nil => false
 
-  #before_validation :set_default_priority
   before_validation :set_default_status
 
   before_save :set_note_count
 
-  #def set_default_priority
-  #  self.priority ||= 0
-  #end
+  def self.max_rank
+    ActiveRecord::Base.connection.execute("select max(rank) from tasks")[0][0].to_i
+  end
 
   def set_default_status
     self.status ||= STATUS_INBOX
