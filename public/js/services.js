@@ -7,6 +7,7 @@ angular.module('myApp.services', []).
     self.allUserNames = [];
     self.allUserNamesAndNobody = [];
     self.allStatuses = [];
+    self.allStatusesPlus = [];
   }]).
 
   service('$auth',['$http','$q','$choices',function($http,$q,$choices){
@@ -31,6 +32,7 @@ angular.module('myApp.services', []).
           $choices.allUserNames = result.all_user_names;
           $choices.allUserNamesAndNobody = ['nobody'].concat(result.all_user_names);
           $choices.allStatuses = result.all_statuses;
+          $choices.allStatusesPlus = ['ACTIVE','CLOSED'].concat(result.all_statuses);
         } else {
           self.userName = '';
           self.loggedIn = false;

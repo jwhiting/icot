@@ -74,14 +74,22 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
 
   // filtering and sorting
   console.log("location.search:",$location.search());
-  $scope.filterStatus = $location.search()['status'];
+  $scope.filterStatus = $location.search()['status'] || 'ACTIVE';
   $scope.filterOwner = $location.search()['owner'];
   $scope.sortBy = $location.search()['sort'] || 'rank';
   $scope.sortOrder = $location.search()['order'] || 1;
   console.log("filterStatus:",$scope.filterStatus);
   console.log("filterOwner:",$scope.filterOwner);
   $scope.filterFunc = function(task) {
-    if ($scope.filterStatus && task.status != $scope.filterStatus) return false;
+    if ($scope.filterStatus) {
+      if ($scope.filterStatus == 'ACTIVE') {
+        if (['inbox','open','in progress','deferred'].indexOf(task.status) == -1) return false;
+      } else if ($scope.filterStatus == 'CLOSED') {
+        if (['done','dupe','wontfix','invalid'].indexOf(task.status) == -1) return false;
+      } else {
+        if (task.status != $scope.filterStatus) return false;
+      }
+    }
     if ($scope.filterOwner) {
       if ($scope.filterOwner == 'nobody' && task.owner) return false;
       if ($scope.filterOwner != 'nobody' && task.owner != $scope.filterOwner) return false;
