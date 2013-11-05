@@ -142,63 +142,91 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     return null;
   };
   $scope.moveRowId = null;
+  $scope.pickingPlacement = false;
   $scope.startMoveRow = function(taskId) {
     if (!$scope.moveRowId) {
       $scope.moveRowId = taskId;
+      $scope.pickingPlacement = true;
     } else {
       $scope.moveRowId = null;
+      $scope.pickingPlacement = false;
     }
   };
-  $scope.endMoveRow = function(taskId,placement) {
-    var movingTaskId = $scope.moveRowId;
+  $scope.startNewTaskPlacement = function() {
+    console.log("pickNewTaskPlacement");
+    $scope.insertNewTaskAtId = null;
+    $scope.insertNewTaskPlacement = null;
     $scope.moveRowId = null;
-    var movingTask = $scope.taskById(movingTaskId);
-    var oldRank = movingTask.rank;
-    var newRank = $scope.taskById(taskId).rank;
-    if (oldRank < newRank) {
-      if (placement == 'above') newRank--;
-      for (var i=0; i<$scope.tasks.length; i++) {
-        if ($scope.tasks[i].rank >= oldRank && $scope.tasks[i].rank <= newRank) {
-          $scope.tasks[i].rank--;
-        }
-      }
-    } else {
-      if (placement == 'below') newRank++;
-      for (var i=0; i<$scope.tasks.length; i++) {
-        if ($scope.tasks[i].rank >= newRank && $scope.tasks[i].rank <= oldRank) {
-          $scope.tasks[i].rank++;
-        }
-      }
-    }
-    movingTask.rank = newRank;
-    $scope.doSort();
-    var params = {
-      'move_id' : movingTaskId,
-      'other_id' : taskId,
-      'placement' : placement,
-    };
-    $http.post('/rerank', params).then(function(result){
-      if (result && result.data) {
-        if (result.data.success) {
-          console.log("reranked task",result.data);
-          $scope.errors = null;
-          $scope.fullTask = result.data.task;
-          //$scope.$emit('loadTasks');
-        } else {
-          console.log("failed to rerank task",result.data);
-          $scope.errors = result.data.errors;
+    $scope.pickingPlacement = !$scope.pickingPlacement;
+    console.log("pickNewTaskPlacement pickingPlacement:",$scope.pickingPlacement);
+  };
+  $scope.finishPlacement = function(taskId, placement) {
+    console.log("finishPlacement",taskId,placement);
+    if ($scope.moveRowId) {
+      // move task
+      var movingTaskId = $scope.moveRowId;
+      $scope.moveRowId = null;
+      $scope.pickingPlacement = false;
+      $scope.insertNewTaskAtId = null;
+      $scope.insertNewTaskPlacement = null;
+      var movingTask = $scope.taskById(movingTaskId);
+      var oldRank = movingTask.rank;
+      var newRank = $scope.taskById(taskId).rank;
+      if (oldRank < newRank) {
+        if (placement == 'above') newRank--;
+        for (var i=0; i<$scope.tasks.length; i++) {
+          if ($scope.tasks[i].rank >= oldRank && $scope.tasks[i].rank <= newRank) {
+            $scope.tasks[i].rank--;
+          }
         }
       } else {
-        console.log("failed to rerank task - no result data");
-        $scope.errors = ['there was a problem communicating with the server'];
+        if (placement == 'below') newRank++;
+        for (var i=0; i<$scope.tasks.length; i++) {
+          if ($scope.tasks[i].rank >= newRank && $scope.tasks[i].rank <= oldRank) {
+            $scope.tasks[i].rank++;
+          }
+        }
       }
-    });
+      movingTask.rank = newRank;
+      $scope.doSort();
+      var params = {
+        'move_id' : movingTaskId,
+        'other_id' : taskId,
+        'placement' : placement,
+      };
+      $http.post('/rerank', params).then(function(result){
+        if (result && result.data) {
+          if (result.data.success) {
+            console.log("reranked task",result.data);
+            $scope.errors = null;
+            $scope.fullTask = result.data.task;
+            //$scope.$emit('loadTasks');
+          } else {
+            console.log("failed to rerank task",result.data);
+            $scope.errors = result.data.errors;
+          }
+        } else {
+          console.log("failed to rerank task - no result data");
+          $scope.errors = ['there was a problem communicating with the server'];
+        }
+      });
+    } else {
+      // new task
+      $scope.pickingPlacement = false;
+      $scope.insertNewTaskAtId = taskId;
+      $scope.insertNewTaskPlacement = placement;
+      $scope.composingNewTask = true;
+      console.log("pickingPlacement",$scope.pickingPlacement,"insertNewTaskAtId",$scope.insertNewTaskAtId,"insertNewTaskPlacement",$scope.insertNewTaskPlacement);
+    }
   };
 
   // task focusing (modal)
   $scope.hasFocusedTask = false;
   $scope.pendingFocusedTaskId = null;
   $scope.focusedTaskId = $location.search()['taskId'];
+  $scope.composingNewTask = false;
+  $scope.insertNewTaskAtId = null;
+  $scope.insertNewTaskPlacement = null;
   if ($scope.focusedTaskId) $scope.hasFocusedTask = true;
   console.log("focusedTaskId=",$scope.focusedTaskId);
   $scope.focusTask = function(taskId) {
@@ -229,6 +257,7 @@ angular.module('myApp').controller('TaskListCtrl',['$scope','$auth', '$http', '$
     console.log("modalDidClose");
     $scope.focusedTaskId = null;
     $scope.hasFocusedTask = false;
+    $scope.composingNewTask = false;
     console.log("setting location taskId to null");
     $location.search('taskId',null);
     if ($scope.pendingFocusedTaskId) {
@@ -343,6 +372,8 @@ angular.module('myApp').controller('NewTaskCtrl',['$scope','$auth', '$http', fun
       'priority' : $scope.newTask.priority,
       'note' : $scope.newTask.newNoteText,
       'raw_tags' : $scope.newTask.raw_tags,
+      'rank_relative_to_id' : $scope.insertNewTaskAtId,
+      'rank_placement' : $scope.insertNewTaskPlacement,
     };
     $http.post('/new_task', params).then(function(result){
       if (result && result.data) {
@@ -350,7 +381,8 @@ angular.module('myApp').controller('NewTaskCtrl',['$scope','$auth', '$http', fun
           $scope.errors = null;
           console.log("saved new task",result.data);
           $scope.closeModal('complete');
-          $scope.$emit('gotTask',result.data.task);
+          //$scope.$emit('gotTask',result.data.task);
+          $scope.$emit('loadTasks');
           return;
         } else {
           console.log("failed to save new task",result.data);

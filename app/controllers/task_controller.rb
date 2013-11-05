@@ -140,10 +140,20 @@ class TaskController < ApplicationController
         note.description = params[:note].to_s.strip
         task.notes << note
       end
+      if params[:rank_relative_to_id].present?
+        relative_task = Task.find(params[:rank_relative_to_id])
+        rank = relative_task.rank
+        placement = params[:rank_placement]
+        rank += 1 if (placement == 'below')
+        ActiveRecord::Base.connection.execute("update tasks set rank=rank+1 where rank >= #{rank}")
+        task.rank = rank
+      end
       if task.valid?
         task.save # also saves new notes and tags
-        task.rank = task.id
-        task.save
+        if task.rank == 0
+          task.rank = task.id
+          task.save
+        end
         render :json => {:success => true, :task => task.vob_hash(:reload => true, :notes => true)}
       else
         render :json => {:success => false, :errors => task.errors.map{|prop,msg| "#{prop}: #{msg}"}}

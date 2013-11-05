@@ -9,7 +9,10 @@
   </ul>
 
   <p>
-    <b><a href="" xhr-modal="partials/newTask.html">New task</a></b>
+    <span ng-switch="pickingPlacement && !moveRowId">
+      <span ng-switch-when="true"><b><a href="" ng-click="startNewTaskPlacement()">Cancel</a></b></span>
+      <span ng-switch-when="false"><b><a href="" ng-click="startNewTaskPlacement()">New task</a></b></span>
+    </span>
     &bull;
     Filter by
     status:
@@ -40,11 +43,11 @@
         </th>
       </tr>
       <tr ng-repeat="task in tasks | filter:filterFunc" ng-class="{'strike':(['done','wontfix','dupe','invalid'].indexOf(task.status) >= 0)}">
-        <td style="padding:0">
-          <button ng-show="!moveRowId" class="move-btn" style="width:40px" ng-click="startMoveRow(task.id)">&uarr;&darr;</button>
-          <button ng-show="moveRowId && moveRowId==task.id" class="move-btn" ng-class="target" style="width:40px" ng-click="startMoveRow(task.id)">&uarr;&darr;</button>
-          <button ng-show="moveRowId && moveRowId!=task.id" class="move-btn" style="width:20px" ng-click="endMoveRow(task.id,'above')">&uarr;</button><!--
-       --><button ng-show="moveRowId && moveRowId!=task.id" class="move-btn" style="width:20px" ng-click="endMoveRow(task.id,'below')">&darr;</button>
+        <td style="padding:0;white-space: nowrap">
+          <button ng-show="!pickingPlacement" class="move-btn" style="width:40px" ng-click="startMoveRow(task.id)" title="{{task.rank}}">&uarr;&darr;</button>
+          <button ng-show="pickingPlacement && moveRowId==task.id" class="move-btn target" style="width:40px" ng-click="startMoveRow(task.id)" title="cancel">&uarr;&darr;</button>
+          <button ng-show="pickingPlacement && moveRowId!=task.id" class="move-btn" ng-class="{'picking':pickingPlacement}" style="width:20px" ng-click="finishPlacement(task.id,'above')" title="insert above">&uarr;</button><!--
+       --><button ng-show="pickingPlacement && moveRowId!=task.id" class="move-btn" ng-class="{'picking':pickingPlacement}" style="width:20px" ng-click="finishPlacement(task.id,'below')" title="insert below">&darr;</button>
         </td>
         <td>{{task.id}}</td>
         <td>{{task.status}}</td>
@@ -72,7 +75,13 @@
 
   <div ng-switch="hasFocusedTask">
     <div ng-switch-when="true">
-      <div xhr-modal="partials/task.html" immediate="true" hide-close-button="false"></div>
+      <div xhr-modal="partials/task.html" immediate="true"></div>
+    </div>
+  </div>
+
+  <div ng-switch="composingNewTask">
+    <div ng-switch-when="true">
+      <div xhr-modal="partials/newTask.html" immediate="true"></div>
     </div>
   </div>
 
