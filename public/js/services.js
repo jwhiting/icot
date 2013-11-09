@@ -18,8 +18,8 @@ angular.module('myApp.services', []).
     self.loggedIn = false;
 
     self.loadWhoami = function() {
-      console.log('whoami post');
-      var fetchPromise = $http.post('/whoami');
+      console.log('whoami get');
+      var fetchPromise = $http.get('/whoami');
       fetchPromise.success(function(result){
         console.log('whoami result:',result);
         if (result && result.success) {

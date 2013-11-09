@@ -56,7 +56,7 @@ Icot::Application.routes.draw do
   # Note: This route will make all actions in every controller accessible via GET requests.
   # match ':controller(/:action(/:id))(.:format)'
 
-  post '/whoami' => 'session#whoami', :as => :whoami
+  get '/whoami' => 'session#whoami', :as => :whoami
   post '/login' => 'session#login', :as => :login
   post '/logout' => 'session#logout', :as => :logout
 
