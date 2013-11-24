@@ -38,3 +38,6 @@ gem 'bcrypt-ruby', '~> 3.0.0'
 # gem 'debugger'
 
 gem 'unicorn'
+
+gem 'aws-s3', '0.6.2'
+gem 'aws-sdk', '1.3.9'
