@@ -16,7 +16,7 @@ set -e
  
 USER=rails
 APP_NAME=icot
-RVM_STRING=ruby-1.9.3-p429
+RVM_STRING=ruby-2.0.0-p451
 APP_ROOT="/home/$USER/$APP_NAME"
 PID="$APP_ROOT/tmp/pids/unicorn.pid"
 ENV_VARS="/home/$USER/.app-env-vars"
